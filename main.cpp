@@ -13,7 +13,7 @@ const double INDEX_OF_REFRACTION_ICE = 1.78;
 
 const double SPEED_OF_LIGHT = 2.9979e8; // meters per second
 
-// Coefficients for a polynomial fit to ESS over 1e17 to 1e21 eV 
+// Coefficients for a polynomial fit to European Spallation Source over 1e17 to 1e21 eV.
 const double COEFFICIENTS[6] = { 1.661142492611783e+04,
 	-4.616049469872646e+03,
 	5.104845489878782e+02,
@@ -31,7 +31,7 @@ void printConstants(){
 	std::cout << "Mean Earth radius:			" << MEAN_EARTH_RADIUS << " meters." << std::endl;
 	std::cout << "Polar Earth radius:			" << POLAR_EARTH_RADIUS << " meters."<< std::endl;
 	std::cout << "Mean Earth density:			" << MEAN_EARTH_DENSITY << " kilograms per cubic meter." << std::endl;
-	std::cout << "Index of refraction of ice:			" << INDEX_OF_REFRACTION_ICE << std::endl;
+	std::cout << "Index of refraction of ice:		" << INDEX_OF_REFRACTION_ICE << std::endl;
 	std::cout << "Vacuum speed of light:			" << SPEED_OF_LIGHT << " meters per second." << std::endl;
 }
 
@@ -42,6 +42,6 @@ void printConstants(){
 int main(int argc, char **argv)
 {
 	printConstants();
-	std::cout << "Done" << std::endl;
+	std::cout << "Done..." << std::endl;
 	return 0;
 }
