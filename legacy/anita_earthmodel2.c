@@ -1,7 +1,7 @@
 
 /*
  * gcc anita_earthmodel2.c -o ~/bin/anita_earthmodel2 -lm -O2
- * 
+ *
 anita_earthmodel: monte carlo neutrino interactions coming into
 antarctica, anita-style.
 This code determines the distribution of neutrinos of a given
@@ -20,7 +20,7 @@ more fixes to earth density model  6/5/2005  --PG
 10/11/2005, added better random seed generator --PG
 
 11/26/2005:  checked some of the geometric formulas, fixed an
-error in integrate_Lint() which made no difference 
+error in integrate_Lint() which made no difference
 ( formula was correct by symmetry, though formally incorrect)  --PG
 
 7/31/2007, minor changes to prelim. earth model, interaction length
@@ -31,7 +31,7 @@ error in integrate_Lint() which made no difference
 10/15/13 bug in firn density call fixed
 
 */
-	
+
 
 #include <stdio.h>
 #include <math.h>
@@ -41,7 +41,7 @@ error in integrate_Lint() which made no difference
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
 
@@ -98,7 +98,7 @@ double lEnu;
 #define lESS_Emin 16.45
 #define lFlux0   -1.688140237260814e+01   // log10(E*F(E)) at lESS_Emin
 
-double get_Enu()  // return neutrino energy according to ESS spectrum		
+double get_Enu()  // return neutrino energy according to ESS spectrum
 {
       double x,y,wx,E,flux0;
 
@@ -119,9 +119,9 @@ double get_Enu()  // return neutrino energy according to ESS spectrum
 
 
 /*>>>>>>>>>>>>>>>>>>  start main <<<<<<<<<<<<<<<<<<<<<<<<<*/
- 	
-main(argc,argv)
-int argc; char **argv;
+
+int main(int argc, char **argv)
+//int argc; char **argv;
 {
  double a,r,R,d,gam,gmin,gmax,dr,rmin,rmax,dgam,pirfac,Fratio,rho,rho2,theta;
  double beta(),acos(),cos(),sin(),exp(),sqrt(),dtime=0, thist[10000],dF,btot;
@@ -144,7 +144,7 @@ int argc; char **argv;
 
 /*___________________________end of declarations__________________________*/
 
-//USAGE:      
+//USAGE:
 
 	if(argc < 3){
 	fprintf(stderr,
@@ -164,14 +164,14 @@ int argc; char **argv;
  	nabs =0;
 	Sphi = 0.0; Spsi=0.0;
 	Nev = (double)Nevt;
-	
+
 	thetaC = acos(1./Nref);
 
 	// a large prime seed; modified October 2005 --PG
 	gettimeofday(&seed_time, (struct timezone*)0);
 	//srand48(1299811);
 	srand48(seed_time.tv_usec);
-	fprintf(stderr,"#Seed value= %d\n", seed_time.tv_usec);
+	fprintf(stderr,"#Seed value= %zu\n", seed_time.tv_usec);
 
 
  fprintf(stdout,"#Enu= %e eV\t maxdepth= %e m\n", Enu, maxdepth);
@@ -189,7 +189,7 @@ printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdept
 
 	depth = 1.e8;
 
-	while(depth > MAXDEPTH){   
+	while(depth > MAXDEPTH){
 
 	  // get the input nadir angle, from horizon to nadir
 	  // the entry angle of the track takes care of downgoing events
@@ -218,15 +218,15 @@ printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdept
 	   thet = get_thet();  // also uses globals Ltot, K1
 	  // upangle is the emergence angle wrt local surface ==> negative for downgoing
 	   upang = thet-PI/2.0;
-	   
+
 	 // calculate depth at shower maximum ==> assume 3m further along track
 	   depthm = depth - 300.0*upang;  // use cm here
 
-	// exclude escaping tracks, those too close to surface, and those too large: 
-	// >22 deg upangle is a problem 
-	if( depthm<5.0 || upang<-.1 || upang >= PI/2.-thetaC-0.2)depth = MAXDEPTH+1.0; 
+	// exclude escaping tracks, those too close to surface, and those too large:
+	// >22 deg upangle is a problem
+	if( depthm<5.0 || upang<-.1 || upang >= PI/2.-thetaC-0.2)depth = MAXDEPTH+1.0;
 	// last part dumps this track
-	
+
 	Ntrials += 2.0; // downgoing on entrance and upcoming on exit, 2 trials
 	}
 	/* if we got out from above, it means we have a valid interaction, within allowed depth range*/
@@ -240,18 +240,18 @@ printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdept
 
 
     }
-
+	
 }  /* >>>>>>>>>>>>>>>>> end main <<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
 /* functions follow: */
 
 
- 
+
 #define HALF (0.500000000000)
 
 int nearint(x)
-double x; 
-{ 
+double x;
+{
         double a, rem;
         int sign, i, newi;
         sign = (x<0) ? -1 : 1;
@@ -260,7 +260,7 @@ double x;
         rem = a-(double)i;
         newi = (i + ((rem > HALF) ? 1 : 0)) * sign;
         return(newi);
-}  
+}
 
 
 
@@ -268,13 +268,13 @@ double x;
 //---------------------------------------------------------------------------------------
 
 double get_nadir_angle()  // returns angle that is flat in cosine distribution (solid angle)
-		
+
 
 {
   double drand48(), acos();
 
   return (acos(drand48()) );
-  
+
   //return(asin(sqrt(drand48()))); test of Brian Mercurio's version 11/26/05
 }
 
@@ -322,10 +322,10 @@ double E,cross_section_factor;
 	//signc = 2.31e-36*pow(E/1.e9,0.363);
 	//sigbcc = 5.52e-36*pow(E/1.e9,0.363);
 	//sigbnc = 2.29e-36*pow(E/1.e9,0.363);
-	
+
 	cc2nc_ratio = 2.39;
 	signc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) ) / cc2nc_ratio;
-	
+
 	//sigtot = 7.82e-36*pow(E/1.e9,0.363);
 	//sigbar = avgsignc;
 
@@ -344,7 +344,7 @@ double E,cross_section_factor;
 
 // This function is based on the Preliminary Earth Model
 // uses  polar radius now -- PG 9/25/04
-// polar radius Re   6356.755e3 m  
+// polar radius Re   6356.755e3 m
 // stupid bug fixed 2/27/2005: part of this  was using km instead of cm!!--PG
 // another density profile bug fixed 6/5/2005
 // modify last layers slightly 7/31/07
@@ -428,9 +428,9 @@ double get_firn_dens(double depth)  // depth in cm
 // fit from gnuplot
 //f(x) = 0.68 + a1*(1.0-exp(-b1*x));
 //a1 = .22; b1 = .0131
-// 
+//
 	double depth1;
-	
+
 	depth1 = depth/100.0;
 	return (0.68 + 0.22*(1.0-exp(-0.0131*depth1)));
 }

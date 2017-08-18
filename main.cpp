@@ -33,7 +33,20 @@ void printConstants(){
 	std::cout << "Mean Earth density:			" << MEAN_EARTH_DENSITY << " kilograms per cubic meter." << std::endl;
 	std::cout << "Index of refraction of ice:		" << INDEX_OF_REFRACTION_ICE << std::endl;
 	std::cout << "Vacuum speed of light:			" << SPEED_OF_LIGHT << " meters per second." << std::endl;
+	std::cout << std::endl;
 }
+
+void printUsage(){
+	std::cout << "usage: anita_earthmodel2 [Nevt][ spectrum='ESS' or 'Enu'][Enu(eV)][maxdepth(m)][cross section factor]"<< std::endl;
+	std::cout << "If single energy 'Enu' then argv[3] is the neutrino energy, else ignored."<< std::endl;
+	std::cout << std::endl;
+}
+
+/*
+ * 		FUNCTIONS
+ */
+
+
 
 /*
  * 		MAIN PROGRAM
@@ -42,6 +55,9 @@ void printConstants(){
 int main(int argc, char **argv)
 {
 	printConstants();
+	if(argc < 3){
+		printUsage();
+	}
 	std::cout << "Done..." << std::endl;
 	return 0;
 }
