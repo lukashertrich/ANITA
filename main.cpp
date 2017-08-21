@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 /*
  * 		GLOBAL CONSTANTS
@@ -57,6 +58,18 @@ int main(int argc, char **argv)
 	printConstants();
 	if(argc < 3){
 		printUsage();
+	}
+	else{
+		const int Nevt = atoi(argv[1]);
+		// If ESS is specified, string comparison returns zero deviation
+		bool ESS = false;
+		if(string::compare(argv[2], "ESS") == 0){
+			ESS = true;
+			std::cout << "ESS specified." << std::endl;
+			std::cout << std::endl;
+		}
+		const int Enu = atof(argv[3]);
+		
 	}
 	std::cout << "Done..." << std::endl;
 	return 0;
