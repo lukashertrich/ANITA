@@ -5,14 +5,14 @@
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
       <wxString Value="/home/lukas/ANITA/main.cpp" Name="FileName"/>
-      <int Value="113" Name="FirstVisibleLine"/>
-      <int Value="129" Name="CurrentLine"/>
+      <int Value="114" Name="FirstVisibleLine"/>
+      <int Value="38" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
       <wxString Value="/home/lukas/ANITA/legacy/anita_earthmodel2.c" Name="FileName"/>
-      <int Value="347" Name="FirstVisibleLine"/>
+      <int Value="52" Name="FirstVisibleLine"/>
       <int Value="53" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>

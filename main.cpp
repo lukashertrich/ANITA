@@ -35,7 +35,8 @@ const double ESS_COEFFICIENTS[6] = {
 	7.727397573928863e-1,
 	-8.473959043935221e-3 };
 
-// Normalized radii of density profile shells listed from the surface inwards to the core. Obtained from PREM
+// Normalized radii of density profile shells listed from the surface inwards to the core.
+// Obtained from spherical PREM and mapped to WGS84
 const std::vector<double> DENSITY_PROFILE_RADII{
 	1.0,																				// Ocean (Exclude ocean from antarctic side of ray traversal by using constant crust density up to sea level)
 	6368000.0 / MEAN_EARTH_RADIUS,		// Crust
@@ -64,27 +65,6 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
 	};
 
 /*
- * 		DIAGNOSTIC FUNCTIONS
- */
-
-void printConstants(){
-	std::cout << "Enumeration of physical constants used in code:" << std::endl;
-	std::cout << "Distance to horizon:			" << DISTANCE_TO_HORIZON << " meters." << std::endl;
-	std::cout << "Mean Earth radius:			" << MEAN_EARTH_RADIUS << " meters." << std::endl;
-	std::cout << "Polar Earth radius:			" << POLAR_EARTH_RADIUS << " meters."<< std::endl;
-	std::cout << "Mean Earth density:			" << MEAN_EARTH_DENSITY << " kilograms per cubic meter." << std::endl;
-	std::cout << "Index of refraction of ice:		" << INDEX_OF_REFRACTION_ICE << std::endl;
-	std::cout << "Vacuum speed of light:			" << SPEED_OF_LIGHT << " meters per second." << std::endl;
-	std::cout << std::endl;
-}
-
-void printUsage(){
-	std::cout << "Usage: anita_earthmodel2 [Nevt][ spectrum='ESS' or 'Enu'][Enu(eV)][maxdepth(m)][cross section factor]"<< std::endl;
-	std::cout << "If single energy 'Enu' then argv[3] is the neutrino energy, else ignored."<< std::endl;
-	std::cout << std::endl;
-}
-
-/*
  * 		FUNCTIONS
  */
 
@@ -97,11 +77,14 @@ double getFirnDensity(double depth){
 std::vector<double> solveQuadratic(double a, double b, double c){
 	std::vector<double> solutions;
 	double discriminant = b * b - 4 * a * c;
+//	std::cout << "Discriminant: " << discriminant << std::endl;
 	if(discriminant < 0){ // No real solutions found
 		return solutions;
 	}
-	solutions.push_back(((-b+sqrt(discriminant)) / (2*a)));
+	
 	solutions.push_back(((-b-sqrt(discriminant)) / (2*a)));
+	solutions.push_back(((-b+sqrt(discriminant)) / (2*a)));
+//	std::cout << "Solutions: " <<   solutions[0] << ", "<< solutions[1] << std::endl;
 	return solutions;
 }
 
@@ -118,6 +101,7 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 		else{
 			intersectionsIngoing.push_back(solutions[0]);
 			intersectionsOutgoing.push_back(solutions[1]);
+//			std::cout << "Intersections at: " << solutions[0] << ", " << solutions[1] << std::endl;
 		}
 	}
 	
@@ -155,6 +139,8 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	double b = 2.0 * ((x*dirX + y*dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (z*dirZ) / POLAR_EARTH_RADIUS_SQR);
 	double c =  (x*x + y*y) / EQUATORIAL_EARTH_RADIUS_SQR + (z*z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
 	
+//	std::cout << "Ray coefficients: " << a << "x^2, " << b << "x, " << c << std::endl;
+	
 	std::vector<std::vector<double>> intersections = getIntersections(a,b,c);
 	
 	double densityTraversed = 0.0;
@@ -184,6 +170,7 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 			default: // Shouldn't occur
 			break;
 		}
+//		std::cout << "Density traversed: " << densityTraversed << std::endl;
 	}
 	// Get last shell if it exists, this must be checked in case a ray never even hits sealevel
 	if(intersections[0].size() > 0){
@@ -202,14 +189,43 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 			computeLinearDensityTraversal(a,b,c,intersections[1][i]) - computeLinearDensityTraversal(a,b,c,intersections[0][i])
 			);
 			case 1: // Constant term
-			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (intersections[1][i+1] - intersections[0][i]);
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (intersections[1][i] - intersections[0][i]);
 			break;
 			default: // Shouldn't occur
 			break;
 		}
+//		std::cout << "Density traversed: " << densityTraversed << std::endl;
 	}
 	
 	return densityTraversed;
+}
+
+/*
+ * 		DIAGNOSTIC FUNCTIONS
+ */
+
+void printConstants(){
+	std::cout << "Enumeration of physical constants used in code:" << std::endl;
+	std::cout << "Distance to horizon:			" << DISTANCE_TO_HORIZON << " meters." << std::endl;
+	std::cout << "Mean Earth radius:			" << MEAN_EARTH_RADIUS << " meters." << std::endl;
+	std::cout << "Polar Earth radius:			" << POLAR_EARTH_RADIUS << " meters."<< std::endl;
+	std::cout << "Mean Earth density:			" << MEAN_EARTH_DENSITY << " kilograms per cubic meter." << std::endl;
+	std::cout << "Index of refraction of ice:		" << INDEX_OF_REFRACTION_ICE << std::endl;
+	std::cout << "Vacuum speed of light:			" << SPEED_OF_LIGHT << " meters per second." << std::endl;
+	std::cout << std::endl;
+}
+
+void printUsage(){
+	std::cout << "Usage: anita_earthmodel2 [Nevt][ spectrum='ESS' or 'Enu'][Enu(eV)][maxdepth(m)][cross section factor]"<< std::endl;
+	std::cout << "If single energy 'Enu' then argv[3] is the neutrino energy, else ignored."<< std::endl;
+	std::cout << std::endl;
+}
+
+void testDensityTraversal(){
+	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS}; // above south pole 
+	auto direction = std::vector<double>{0,0,1.00}; // +Z direction
+	double densityTraversed = getDensityTraversed(position, direction);
+	std::cout << "Density traversed: " << densityTraversed << " kgm / m^3" << std::endl;
 }
 
 /*
@@ -237,6 +253,7 @@ int main(int argc, char **argv)
 		double crossSectionFactor = atof(argv[5]);
 		
 	}
+	testDensityTraversal();
 	std::cout << "Done..." << std::endl;
 	return 0;
 }
