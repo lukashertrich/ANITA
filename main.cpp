@@ -1,3 +1,7 @@
+/*
+ * 		ANITA Earth Model
+ */
+
 #include <iostream>
 #include <string>
 #include <thread>
@@ -8,7 +12,7 @@
  * 		GLOBAL CONSTANTS
  */
 
-// Equatorial and polar Earth radii are defined by the WGS84 ellipsoid
+// Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
 const double DISTANCE_TO_HORIZON = 6.000e5; // meters
 const double MEAN_EARTH_RADIUS = 6.3710e6; // meters
 const double EQUATORIAL_EARTH_RADIUS = 6378137; // meters
@@ -33,7 +37,7 @@ const double ESS_COEFFICIENTS[6] = {
 
 // Normalized radii of density profile shells listed from the surface inwards to the core. Obtained from PREM
 const std::vector<double> DENSITY_PROFILE_RADII{
-	1.0,																				// Ocean (Exclude ocean from antarctic side of ray traversal by using crust density up to sea level)
+	1.0,																				// Ocean (Exclude ocean from antarctic side of ray traversal by using constant crust density up to sea level)
 	6368000.0 / MEAN_EARTH_RADIUS,		// Crust
 	6356000.0 / MEAN_EARTH_RADIUS,		// Crust
 	6346600.0 / MEAN_EARTH_RADIUS,		// LVZ/LID
@@ -45,7 +49,7 @@ const std::vector<double> DENSITY_PROFILE_RADII{
 	1221500.0 / MEAN_EARTH_RADIUS		// Inner Core
 } ;
 
-// x^0, x^1, x^2, x^3, etc.
+// x^0, x^1, x^2, x^3, etc. from PREM
 const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	// Given in kg / m^3
 	std::vector<double>{1020.0},															// Ocean
 	std::vector<double>{2600.0},															// Crust
@@ -85,35 +89,59 @@ void printUsage(){
  */
 
 double getFirnDensity(double depth){
+	//TODO
 	return 0;
 }
 
+// Supply coefficients  in ax^2+bx+c form to obtain real solutions
 std::vector<double> solveQuadratic(double a, double b, double c){
 	std::vector<double> solutions;
 	double discriminant = b * b - 4 * a * c;
-	if(discriminant < 0){
+	if(discriminant < 0){ // No real solutions found
 		return solutions;
 	}
-	solutions.push_back(((-b+sqrt(discriminant))/ (2*a)));
-	solutions.push_back(((-b+sqrt(discriminant))/ (2*a)));
+	solutions.push_back(((-b+sqrt(discriminant)) / (2*a)));
+	solutions.push_back(((-b-sqrt(discriminant)) / (2*a)));
+	return solutions;
 }
 
 std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 	std::vector<double> intersectionsIngoing;
 	std::vector<double> intersectionsOutgoing;
-	
+	// Test for PREM density shell intersection from surface inwards to core
+	// Loop will break out as soon as no intersection is found, meaning current and deeper shells aren't traversed.
 	for(unsigned int i = 0; i < DENSITY_PROFILE_RADII.size(); i++){
 		std::vector<double> solutions = solveQuadratic(a, b, c - (DENSITY_PROFILE_RADII[i] * DENSITY_PROFILE_RADII[i]));
-		if(solutions.size() == 0){
+		if(solutions.size() == 0){ // No real solutions found, indicating shell isn't traversed
 			break;
 		}
-		intersectionsIngoing.push_back(solutions[0]);
-		intersectionsOutgoing.push_back(solutions[1]);
+		else{
+			intersectionsIngoing.push_back(solutions[0]);
+			intersectionsOutgoing.push_back(solutions[1]);
+		}
 	}
+	
 	return std::vector<std::vector<double>>{intersectionsIngoing, intersectionsOutgoing};
 }
 
-// Provide initial ray position and direction in order to calculate integral of traversed density across PREM profiles
+// t is the traversal distance given by intersection; a, b, c are coefficients of the ray traversal
+double computeLinearDensityTraversal(double a, double b, double c, double t){
+	return ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
+}
+
+double computeQuadraticDensityTraversal(double a, double b, double c, double t){
+	return (a / 3.0) * t * t * t + 0.5 * b * t * t + c * t;
+}
+
+double computeCubicDensityTraversal(double a, double b, double c, double t){
+	return (1.0 / (128.0 * sqrt(a*a*a*a*a)))
+	* (2.0 * sqrt(a) *(2.0*a*t+b)*sqrt(t*(a*t+b)+c)
+	* (8.0*a*b*t + 4.0*a*(2.0*a*t*t+5.0*c)-3.0*b*b)
+	+ 3.0 * (b*b-4.0*a*c)*(b*b-4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c)+2.0*a*t+b));
+}
+
+// Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
+// in order to calculate integral of traversed density across PREM profiles applied to WGS84 ellipsoid
 double getDensityTraversed(std::vector<double> position, std::vector<double> direction){
 	double x = position[0];
 	double y = position[1];
@@ -122,14 +150,66 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	double dirY = direction[1];
 	double dirZ = direction[2];
 	
-	// Coefficients of quadratic equation to solve against squared PREM profile radii
+	// Coefficients of quadratic equation to solve against squared normalized PREM profile radii, (ax^2 + bx + c)
 	double a = (dirX * dirX + dirY * dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (dirZ * dirZ) / POLAR_EARTH_RADIUS_SQR;
 	double b = 2.0 * ((x*dirX + y*dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (z*dirZ) / POLAR_EARTH_RADIUS_SQR);
 	double c =  (x*x + y*y) / EQUATORIAL_EARTH_RADIUS_SQR + (z*z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
 	
-	// LEFT OFF HERE: Get interesctions <=================
+	std::vector<std::vector<double>> intersections = getIntersections(a,b,c);
 	
-	return 0;
+	double densityTraversed = 0.0;
+	
+	for(unsigned int i = 0; i < intersections[0].size() - 1; i++){ // Last shell must be integrated between last outbound and inbound
+		// Integrate both parts of each shell traversal
+		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
+			case 4: // Cubic term and all less
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][3] * (
+			computeCubicDensityTraversal(a,b,c,intersections[0][i+1]) - computeCubicDensityTraversal(a,b,c,intersections[0][i]) +
+			computeCubicDensityTraversal(a,b,c,intersections[1][i]) - computeCubicDensityTraversal(a,b,c,intersections[1][i+1])
+			);
+			case 3: // Quadratic term and all less
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][2] * (
+			computeQuadraticDensityTraversal(a,b,c,intersections[0][i+1]) - computeQuadraticDensityTraversal(a,b,c,intersections[0][i]) +
+			computeQuadraticDensityTraversal(a,b,c,intersections[1][i]) - computeQuadraticDensityTraversal(a,b,c,intersections[1][i+1])
+			);
+			case 2: // Linear term and all less
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (
+			computeLinearDensityTraversal(a,b,c,intersections[0][i+1]) - computeLinearDensityTraversal(a,b,c,intersections[0][i]) +
+			computeLinearDensityTraversal(a,b,c,intersections[1][i]) - computeLinearDensityTraversal(a,b,c,intersections[1][i+1])
+			);
+			case 1: // Constant term
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (intersections[0][i+1] - intersections[0][i] +
+			intersections[1][i] - intersections[1][i+1]);
+			break;
+			default: // Shouldn't occur
+			break;
+		}
+	}
+	// Get last shell if it exists, this must be checked in case a ray never even hits sealevel
+	if(intersections[0].size() > 0){
+		unsigned int i = intersections[0].size() - 1;
+		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
+			case 4: // Cubic term and all less
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][3] * (
+			computeCubicDensityTraversal(a,b,c,intersections[1][i]) - computeCubicDensityTraversal(a,b,c,intersections[0][i])
+			);
+			case 3: // Quadratic term and all less
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][2] * (
+			computeQuadraticDensityTraversal(a,b,c,intersections[1][i]) - computeQuadraticDensityTraversal(a,b,c,intersections[0][i])
+			);
+			case 2: // Linear term and all less
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (
+			computeLinearDensityTraversal(a,b,c,intersections[1][i]) - computeLinearDensityTraversal(a,b,c,intersections[0][i])
+			);
+			case 1: // Constant term
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (intersections[1][i+1] - intersections[0][i]);
+			break;
+			default: // Shouldn't occur
+			break;
+		}
+	}
+	
+	return densityTraversed;
 }
 
 /*
