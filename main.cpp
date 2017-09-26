@@ -13,11 +13,13 @@
  */
 
 // Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
+// Antarctic data will be mapped on top of crust extruded through sea level
 const double DISTANCE_TO_HORIZON = 6.000e5; // meters
 const double MEAN_EARTH_RADIUS = 6.3710e6; // meters
 const double EQUATORIAL_EARTH_RADIUS = 6378137; // meters
 const double EQUATORIAL_EARTH_RADIUS_SQR = EQUATORIAL_EARTH_RADIUS * EQUATORIAL_EARTH_RADIUS; // meters squared
 const double INVERSE_FLATTENING = 298.257223563; // Used to determine polar radius
+// WGS84 polar radius is defined by inverse flattening term
 const double POLAR_EARTH_RADIUS = EQUATORIAL_EARTH_RADIUS * (1.0 - (1.0 / INVERSE_FLATTENING)); // meters
 const double POLAR_EARTH_RADIUS_SQR = POLAR_EARTH_RADIUS * POLAR_EARTH_RADIUS; // meters squared
 const double MEAN_EARTH_DENSITY = 5.515e3; // kg per cubic meter
@@ -36,9 +38,9 @@ const double ESS_COEFFICIENTS[6] = {
 	-8.473959043935221e-3 };
 
 // Normalized radii of density profile shells listed from the surface inwards to the core.
-// Obtained from spherical PREM and mapped to WGS84
+// Obtained from spherical PREM to be mapped to normalized WGS84 ellipsoid equation
 const std::vector<double> DENSITY_PROFILE_RADII{
-	1.0,																				// Ocean (Exclude ocean from antarctic side of ray traversal by using constant crust density up to sea level)
+	1.0,																				// Ocean (Exclude ocean from antarctic side of ray traversal by using constant crust density extruded  up to sea level)
 	6368000.0 / MEAN_EARTH_RADIUS,		// Crust
 	6356000.0 / MEAN_EARTH_RADIUS,		// Crust
 	6346600.0 / MEAN_EARTH_RADIUS,		// LVZ/LID
@@ -69,7 +71,7 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
  */
 
 double getFirnDensity(double depth){
-	//TODO
+	//TODO: need reference materials to obtain good function. Does exponential packing suffice?
 	return 0;
 }
 
@@ -79,11 +81,18 @@ std::vector<double> solveQuadratic(double a, double b, double c){
 	double discriminant = b * b - 4 * a * c;
 //	std::cout << "Discriminant: " << discriminant << std::endl;
 	if(discriminant < 0){ // No real solutions found
-		return solutions;
+		return solutions; // Empty vector, size() == 0
+	}
+	// Solve real roots in a numerically stable way
+	if(b < 0){
+		solutions.push_back((2.0*c) / (-b + discriminant));
+		solutions.push_back((-b+discriminant) / (2.0*a));
+	}
+	else{
+		solutions.push_back((-b-discriminant) / (2.0*a));
+		solutions.push_back((2.0*c) / (-b - discriminant));
 	}
 	
-	solutions.push_back(((-b-sqrt(discriminant)) / (2*a)));
-	solutions.push_back(((-b+sqrt(discriminant)) / (2*a)));
 //	std::cout << "Solutions: " <<   solutions[0] << ", "<< solutions[1] << std::endl;
 	return solutions;
 }
@@ -101,27 +110,33 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 		else{
 			intersectionsIngoing.push_back(solutions[0]);
 			intersectionsOutgoing.push_back(solutions[1]);
-//			std::cout << "Intersections at: " << solutions[0] << ", " << solutions[1] << std::endl;
+			std::cout << "Intersections at: " << solutions[0] << ", " << solutions[1] << std::endl;
 		}
 	}
 	
 	return std::vector<std::vector<double>>{intersectionsIngoing, intersectionsOutgoing};
 }
 
-// t is the traversal distance given by intersection; a, b, c are coefficients of the ray traversal
+// t is the traversal distance given by intersection; a, b, c are aggregate coefficients of the ray traversal
 double computeLinearDensityTraversal(double a, double b, double c, double t){
-	return ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
+	double result = ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
+	std::cout << "Linear density traversal: " << result << std::endl;
+	return result;
 }
 
 double computeQuadraticDensityTraversal(double a, double b, double c, double t){
-	return (a / 3.0) * t * t * t + 0.5 * b * t * t + c * t;
+	double result = (a / 3.0) * t * t * t + 0.5 * b * t * t + c * t;
+	std::cout << "Quadratic density traversal: " << result << std::endl;
+	return result;
 }
 
 double computeCubicDensityTraversal(double a, double b, double c, double t){
-	return (1.0 / (128.0 * sqrt(a*a*a*a*a)))
+	double result = (1.0 / (128.0 * sqrt(a*a*a*a*a)))
 	* (2.0 * sqrt(a) *(2.0*a*t+b)*sqrt(t*(a*t+b)+c)
 	* (8.0*a*b*t + 4.0*a*(2.0*a*t*t+5.0*c)-3.0*b*b)
 	+ 3.0 * (b*b-4.0*a*c)*(b*b-4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c)+2.0*a*t+b));
+	std::cout << "Cubic density traversal: " << result << std::endl;
+	return result;
 }
 
 // Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
@@ -139,9 +154,9 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	double b = 2.0 * ((x*dirX + y*dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (z*dirZ) / POLAR_EARTH_RADIUS_SQR);
 	double c =  (x*x + y*y) / EQUATORIAL_EARTH_RADIUS_SQR + (z*z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
 	
-//	std::cout << "Ray coefficients: " << a << "x^2, " << b << "x, " << c << std::endl;
+	std::cout << "Ray coefficients: " << a << " x^2, " << b << " x, " << c << std::endl;
 	
-	std::vector<std::vector<double>> intersections = getIntersections(a,b,c);
+	auto intersections = getIntersections(a,b,c);
 	
 	double densityTraversed = 0.0;
 	
@@ -164,7 +179,7 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 			computeLinearDensityTraversal(a,b,c,intersections[1][i]) - computeLinearDensityTraversal(a,b,c,intersections[1][i+1])
 			);
 			case 1: // Constant term
-			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (intersections[0][i+1] - intersections[0][i] +
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][0] * (intersections[0][i+1] - intersections[0][i] +
 			intersections[1][i] - intersections[1][i+1]);
 			break;
 			default: // Shouldn't occur
@@ -189,7 +204,7 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 			computeLinearDensityTraversal(a,b,c,intersections[1][i]) - computeLinearDensityTraversal(a,b,c,intersections[0][i])
 			);
 			case 1: // Constant term
-			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][1] * (intersections[1][i] - intersections[0][i]);
+			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][0] * (intersections[1][i] - intersections[0][i]);
 			break;
 			default: // Shouldn't occur
 			break;
@@ -222,10 +237,10 @@ void printUsage(){
 }
 
 void testDensityTraversal(){
-	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS}; // above south pole 
+	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS - 100.0}; // above south pole 
 	auto direction = std::vector<double>{0,0,1.00}; // +Z direction
 	double densityTraversed = getDensityTraversed(position, direction);
-	std::cout << "Density traversed: " << densityTraversed << " kgm / m^3" << std::endl;
+	std::cout << "Density traversed: " << densityTraversed << " kg m / m^3" << std::endl;
 }
 
 /*
