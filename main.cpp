@@ -75,14 +75,14 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
 
 void normalizeVector(std::vector<double> v){
 	double magsqr = 0;
-	for(unsigned int i = 0; i < v.size(); i++){
+	for(int i = 0; i < v.size(); i++){
 		magsqr += v[i] * v[i];
 	}
 	if(magsqr == 0){
 		return;
 	}
 	magsqr = sqrt(magsqr);
-	for(unsigned int i = 0; i < v.size(); i++){
+	for(int i = 0; i < v.size(); i++){
 		v[i] /= magsqr;
 	}
 }
@@ -178,9 +178,9 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	
 	double densityTraversed = 0.0;
 	
-	// DO NOT USE UNSIGNED INT FOR ITERATOR!!!!!!!
-	// A collisionless ray will underflow the iterator and segfault
+	if(intersections[0].size() > 0){
 	for(int i = 0; i < intersections[0].size() - 1; i++){ // Last shell must be integrated between last outbound and inbound
+//		std::cout << intersections[0].size() << std::endl;
 		// Integrate both parts of each shell traversal
 		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
 			case 4: // Cubic term and all less
@@ -206,9 +206,7 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 			break;
 		}
 //		std::cout << "Density traversed: " << densityTraversed << std::endl;
-	}
-	// Get last shell if it exists, this must be checked in case a ray never even hits sealevel
-	if(intersections[0].size() > 0){
+	}	
 		int i = intersections[0].size() - 1;
 		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
 			case 4: // Cubic term and all less
@@ -266,13 +264,13 @@ void testDensityTraversal(){
 	auto direction = std::vector<double>{0,0,1.00}; // +Z direction
 //	double densityTraversed = getDensityTraversed(position, direction);
 //	std::cout << "Density traversed: " << densityTraversed << " kg m / m^3" << std::endl;
-	unsigned int n = 100;
+	unsigned int n = 10;
 	double phi;
 	double theta;
 	for(unsigned int i = 0; i <= n; i++){
 		phi = (2.0 * M_PI / n) * i;
 		for (unsigned int j = 0; j <=n; j++){			
-			theta = (M_PI) -  j *((M_PI / 2.0) * (1.0 / n));
+			theta = (M_PI) -  j *((M_PI) * (1.0 / n));
 			direction[0] = sin(theta)*cos(phi);
 			direction[1] = sin(theta)*sin(phi);
 			direction[2] = cos(theta);
