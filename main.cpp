@@ -7,6 +7,9 @@
 #include <thread>
 #include <random>
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <complex>
 
 /*
  * 		GLOBAL CONSTANTS
@@ -70,6 +73,20 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
  * 		FUNCTIONS
  */
 
+void normalizeVector(std::vector<double> v){
+	double magsqr = 0;
+	for(unsigned int i = 0; i < v.size(); i++){
+		magsqr += v[i] * v[i];
+	}
+	if(magsqr == 0){
+		return;
+	}
+	magsqr = sqrt(magsqr);
+	for(unsigned int i = 0; i < v.size(); i++){
+		v[i] /= magsqr;
+	}
+}
+
 double getFirnDensity(double depth){
 	//TODO: need reference materials to obtain good function. Does exponential packing suffice?
 	return 0;
@@ -102,7 +119,7 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 	std::vector<double> intersectionsOutgoing;
 	// Test for PREM density shell intersection from surface inwards to core
 	// Loop will break out as soon as no intersection is found, meaning current and deeper shells aren't traversed.
-	for(unsigned int i = 0; i < DENSITY_PROFILE_RADII.size(); i++){
+	for(int i = 0; i < DENSITY_PROFILE_RADII.size(); i++){
 		std::vector<double> solutions = solveQuadratic(a, b, c - (DENSITY_PROFILE_RADII[i] * DENSITY_PROFILE_RADII[i]));
 		if(solutions.size() == 0){ // No real solutions found, indicating shell isn't traversed
 			break;
@@ -110,32 +127,33 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 		else{
 			intersectionsIngoing.push_back(solutions[0]);
 			intersectionsOutgoing.push_back(solutions[1]);
-			std::cout << "Intersections at: " << solutions[0] << ", " << solutions[1] << std::endl;
+//			std::cout << "Intersections at: " << solutions[0] << ", " << solutions[1] << std::endl;
 		}
-	}
-	
+	}	
 	return std::vector<std::vector<double>>{intersectionsIngoing, intersectionsOutgoing};
 }
 
 // t is the traversal distance given by intersection; a, b, c are aggregate coefficients of the ray traversal
 double computeLinearDensityTraversal(double a, double b, double c, double t){
-	double result = ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
-	std::cout << "Linear density traversal: " << result << std::endl;
+
+	auto result = ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
+//	std::cout << "Linear density traversal: " << result << std::endl;
 	return result;
 }
 
 double computeQuadraticDensityTraversal(double a, double b, double c, double t){
 	double result = (a / 3.0) * t * t * t + 0.5 * b * t * t + c * t;
-	std::cout << "Quadratic density traversal: " << result << std::endl;
+//	std::cout << "Quadratic density traversal: " << result << std::endl;
 	return result;
 }
 
 double computeCubicDensityTraversal(double a, double b, double c, double t){
-	double result = (1.0 / (128.0 * sqrt(a*a*a*a*a)))
+	
+	auto result = (1.0 / (128.0 * sqrt(a*a*a*a*a)))
 	* (2.0 * sqrt(a) *(2.0*a*t+b)*sqrt(t*(a*t+b)+c)
 	* (8.0*a*b*t + 4.0*a*(2.0*a*t*t+5.0*c)-3.0*b*b)
 	+ 3.0 * (b*b-4.0*a*c)*(b*b-4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c)+2.0*a*t+b));
-	std::cout << "Cubic density traversal: " << result << std::endl;
+//	std::cout << "Cubic density traversal: " << result << std::endl;
 	return result;
 }
 
@@ -154,13 +172,15 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	double b = 2.0 * ((x*dirX + y*dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (z*dirZ) / POLAR_EARTH_RADIUS_SQR);
 	double c =  (x*x + y*y) / EQUATORIAL_EARTH_RADIUS_SQR + (z*z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
 	
-	std::cout << "Ray coefficients: " << a << " x^2, " << b << " x, " << c << std::endl;
+//	std::cout << "Ray coefficients: " << a << " x^2, " << b << " x, " << c << std::endl;
 	
 	auto intersections = getIntersections(a,b,c);
 	
 	double densityTraversed = 0.0;
 	
-	for(unsigned int i = 0; i < intersections[0].size() - 1; i++){ // Last shell must be integrated between last outbound and inbound
+	// DO NOT USE UNSIGNED INT FOR ITERATOR!!!!!!!
+	// A collisionless ray will underflow the iterator and segfault
+	for(int i = 0; i < intersections[0].size() - 1; i++){ // Last shell must be integrated between last outbound and inbound
 		// Integrate both parts of each shell traversal
 		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
 			case 4: // Cubic term and all less
@@ -189,7 +209,7 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	}
 	// Get last shell if it exists, this must be checked in case a ray never even hits sealevel
 	if(intersections[0].size() > 0){
-		unsigned int i = intersections[0].size() - 1;
+		int i = intersections[0].size() - 1;
 		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
 			case 4: // Cubic term and all less
 			densityTraversed += DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i][3] * (
@@ -237,10 +257,29 @@ void printUsage(){
 }
 
 void testDensityTraversal(){
-	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS - 100.0}; // above south pole 
+	
+	std::ofstream outFile;
+	outFile.precision(20);
+	std::string outfilePath = "diagnostic.dat";
+	outFile.open(outfilePath);
+	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS}; // above south pole 
 	auto direction = std::vector<double>{0,0,1.00}; // +Z direction
-	double densityTraversed = getDensityTraversed(position, direction);
-	std::cout << "Density traversed: " << densityTraversed << " kg m / m^3" << std::endl;
+//	double densityTraversed = getDensityTraversed(position, direction);
+//	std::cout << "Density traversed: " << densityTraversed << " kg m / m^3" << std::endl;
+	unsigned int n = 100;
+	double phi;
+	double theta;
+	for(unsigned int i = 0; i <= n; i++){
+		phi = (2.0 * M_PI / n) * i;
+		for (unsigned int j = 0; j <=n; j++){			
+			theta = (M_PI) -  j *((M_PI / 2.0) * (1.0 / n));
+			direction[0] = sin(theta)*cos(phi);
+			direction[1] = sin(theta)*sin(phi);
+			direction[2] = cos(theta);
+			outFile << direction[0] << "	" << direction[1] << "	" << getDensityTraversed(position, direction) << std::endl;
+		}
+	}
+	outFile.close();
 }
 
 /*
