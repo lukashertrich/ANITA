@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Lukas
-Date                   :=27/09/17
+Date                   :=29/09/17
 CodeLitePath           :=/home/lukas/.codelite
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -60,7 +60,7 @@ AS       := /usr/bin/as
 ## User defined environment variables
 ##
 CodeLiteDir:=/usr/share/codelite
-Objects0=$(IntermediateDirectory)/main.cpp$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/anita_earthmodel_2017.cpp$(ObjectSuffix) 
 
 
 
@@ -91,13 +91,13 @@ PreBuild:
 ##
 ## Objects
 ##
-$(IntermediateDirectory)/main.cpp$(ObjectSuffix): main.cpp $(IntermediateDirectory)/main.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lukas/ANITA/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IncludePath)
-$(IntermediateDirectory)/main.cpp$(DependSuffix): main.cpp
-	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/main.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/main.cpp$(DependSuffix) -MM main.cpp
+$(IntermediateDirectory)/anita_earthmodel_2017.cpp$(ObjectSuffix): anita_earthmodel_2017.cpp $(IntermediateDirectory)/anita_earthmodel_2017.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/lukas/ANITA/anita_earthmodel_2017.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/anita_earthmodel_2017.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/anita_earthmodel_2017.cpp$(DependSuffix): anita_earthmodel_2017.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/anita_earthmodel_2017.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/anita_earthmodel_2017.cpp$(DependSuffix) -MM anita_earthmodel_2017.cpp
 
-$(IntermediateDirectory)/main.cpp$(PreprocessSuffix): main.cpp
-	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/main.cpp$(PreprocessSuffix) main.cpp
+$(IntermediateDirectory)/anita_earthmodel_2017.cpp$(PreprocessSuffix): anita_earthmodel_2017.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/anita_earthmodel_2017.cpp$(PreprocessSuffix) anita_earthmodel_2017.cpp
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
