@@ -260,7 +260,7 @@ void testDensityTraversal(){
 	outFile.precision(20);
 	std::string outfilePath = "diagnostic.dat";
 	outFile.open(outfilePath);
-	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS}; // above south pole 
+	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS}; // geometric south pole 
 	auto direction = std::vector<double>{0,0,1.00}; // +Z direction
 //	double densityTraversed = getDensityTraversed(position, direction);
 //	std::cout << "Density traversed: " << densityTraversed << " kg m / m^3" << std::endl;
