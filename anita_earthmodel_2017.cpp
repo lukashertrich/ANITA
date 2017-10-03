@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <complex>
+#include <cmath>
 
 /*
  * 		GLOBAL CONSTANTS
@@ -123,8 +124,11 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 			break;
 		}
 		else{
-			intersectionsIngoing.push_back(solutions[0]);
-			intersectionsOutgoing.push_back(solutions[1]);
+			// Restrict solutions to zero and greater to enforce traversal from point of interest forward along ray
+			// Otherwise density traversed along a direction out from a point that lies BENEATH the Earth's
+			// outer surface will include density behind the point (ray in other direction) as well.
+			intersectionsIngoing.push_back(std::max(solutions[0],0.));
+			intersectionsOutgoing.push_back(std::max(solutions[1],0.));
 //			std::cout << "Intersections at: " << solutions[0] << ", " << solutions[1] << std::endl;
 		}
 	}	
@@ -132,27 +136,21 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 }
 
 // t is the traversal distance given by intersection; a, b, c are aggregate coefficients of the ray traversal
+// The compiler will likely optimize recurring terms, so, for clarity, code is a direct implementation of indefinite integral
+// provided by output from Wolfram Alpha
 double computeLinearDensityTraversal(double a, double b, double c, double t){
-
-	auto result = ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
-//	std::cout << "Linear density traversal: " << result << std::endl;
-	return result;
+	return ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
 }
 
 double computeQuadraticDensityTraversal(double a, double b, double c, double t){
-	double result = (a / 3.0) * t * t * t + 0.5 * b * t * t + c * t;
-//	std::cout << "Quadratic density traversal: " << result << std::endl;
-	return result;
+	return (a / 3.0) * t * t * t + 0.5 * b * t * t + c * t;
 }
 
-double computeCubicDensityTraversal(double a, double b, double c, double t){
-	
-	auto result = (1.0 / (128.0 * sqrt(a*a*a*a*a)))
+double computeCubicDensityTraversal(double a, double b, double c, double t){	
+	return (1.0 / (128.0 * sqrt(a*a*a*a*a)))
 	* (2.0 * sqrt(a) *(2.0*a*t+b)*sqrt(t*(a*t+b)+c)
 	* (8.0*a*b*t + 4.0*a*(2.0*a*t*t+5.0*c)-3.0*b*b)
 	+ 3.0 * (b*b-4.0*a*c)*(b*b-4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c)+2.0*a*t+b));
-//	std::cout << "Cubic density traversal: " << result << std::endl;
-	return result;
 }
 
 // Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
@@ -267,11 +265,11 @@ void testDensityTraversal(){
 	for(unsigned int i = 0; i <= n; i++){
 		phi = (2.0 * M_PI / n) * i;
 		for (unsigned int j = 0; j <=n; j++){			
-			theta = j *((M_PI / 2) * (1.0 / n));
+			theta = j *((M_PI) * (1.0 / n));
 			direction[0] = sin(theta)*cos(phi);
 			direction[1] = sin(theta)*sin(phi);
 			direction[2] = cos(theta);
-			outFile << direction[0] << "	" << direction[1] << "	" << getDensityTraversed(position, direction) << std::endl;			
+			outFile << phi << "	" << theta << "	" << getDensityTraversed(position, direction) << std::endl;			
 		}
 		outFile << std::endl;
 	}
