@@ -1,0 +1,39 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+
+%opening
+\title{Neutrino Raycast Against Polar Stereographic Heightfield}
+\author{Lukas R. Hertrich}
+
+\begin{document}
+
+\maketitle
+
+%\begin{abstract}
+
+%\end{abstract}
+
+\section{Data Format}
+Antarctic elevation and ice sheet data are provided by BEDMAP 2 in Antarctic polar stereographic projection.
+The projection plane is located at 71\textdegree~ south latitude and rays are cast down from the north pole to intersect the projection plane and ellipsoid.
+The angle is in ellipsoidal coordinates determined by WGS84.
+\section{Neutrino Raycast}
+The 3D raycast is parameterized with an initial position $\vec{r_0}$, a direction $\hat{d}$, and a parameter $\tau$, yielding
+\begin{equation}\label{eqn:r_of_tau}
+ \vec{r}(\tau) = \vec{r_0} + \tau \hat{d}
+\end{equation}
+This ray traverses flat, unmodified 3D cartesian space, meaning that distance traversed by the ray is equal to $\tau$.
+
+The same ray may be parameterized in terms of normalized cartesian coordinates,
+meaning that the $\vec{r_0}$ terms $r_x$ and $r_y$ are divided by the equatorial radius $R_{eq}$ of the WGS84 ellipsoid,
+and the $r_z$ term is divided by the polar radius $R_{po}$.
+This yields a magnitude of radius relative to the local ellipsoidal radius, and a ray that intersects the ellipsoid
+where $r_{ellipsoidal}(\tau) = 1$.
+The magnitude of $r_{ellipsoidal}$ may be determined as follows:
+\begin{equation}\label{eqn:r_ellipsoidal}
+ r_{ellipsoidal} = \sqrt{\frac{r_x^2 + r_y^2}{R_{eq}^2} + \frac{r_z^2}{R_{po}^2} + 2t\left(\frac{r_x d_x + r_y d_y}{R_{eq}^2} + \frac{r_z^2}{R_{po}^2}  \right)}
+\end{equation}
+
+
+\end{document}
