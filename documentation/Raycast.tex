@@ -3,7 +3,7 @@
 \usepackage{textcomp}
 
 %opening
-\title{Neutrino Raycast Against Polar Stereographic Heightfield}
+\title{Raycast Against Polar Stereographic Heightfield}
 \author{Lukas R. Hertrich}
 
 \begin{document}
@@ -18,7 +18,7 @@
 Antarctic elevation and ice sheet data are provided by BEDMAP 2 in Antarctic polar stereographic projection.
 The projection plane is located at 71\textdegree~ south latitude and rays are cast down from the north pole to intersect the projection plane and ellipsoid.
 The angle is in ellipsoidal coordinates determined by WGS84.
-\section{Neutrino Raycast}
+\section{Raycast}
 The 3D raycast is parameterized with an initial position $\vec{r_0}$, a direction $\hat{d}$, and a parameter $\tau$, yielding
 \begin{equation}\label{eqn:r_of_tau}
  \vec{r}(\tau) = \vec{r_0} + \tau \hat{d}
@@ -28,12 +28,35 @@ This ray traverses flat, unmodified 3D cartesian space, meaning that distance tr
 The same ray may be parameterized in terms of normalized cartesian coordinates,
 meaning that the $\vec{r_0}$ terms $r_x$ and $r_y$ are divided by the equatorial radius $R_{eq}$ of the WGS84 ellipsoid,
 and the $r_z$ term is divided by the polar radius $R_{po}$.
-This yields a magnitude of radius relative to the local ellipsoidal radius, and a ray that intersects the ellipsoid
+This yields a magnitude of radius relative to the radius of the ellipsoid in the given direction, and a ray that intersects the ellipsoid's surface
 where $r_{ellipsoidal}(\tau) = 1$.
 The magnitude of $r_{ellipsoidal}$ may be determined as follows:
+
 \begin{equation}\label{eqn:r_ellipsoidal}
- r_{ellipsoidal} = \sqrt{\frac{r_x^2 + r_y^2}{R_{eq}^2} + \frac{r_z^2}{R_{po}^2} + 2t\left(\frac{r_x d_x + r_y d_y}{R_{eq}^2} + \frac{r_z^2}{R_{po}^2}  \right)}
+ r_{ellipsoidal} = \sqrt{\frac{r_x^2 + r_y^2}{R_{eq}^2} + \frac{r_z^2}{R_{po}^2}
+ + 2t\left(\frac{r_x d_x + r_y d_y}{R_{eq}^2} + \frac{r_z d_z	}{R_{po}^2}  \right)
+ + t^2 \left( \frac{d_x^2 + d_y^2}{R_{eq}^2} + \frac{d_z^2}{R_{po}^2} \right)}
 \end{equation}
 
+\section{Intersection With Heightfield}
+The ray intersects the heightfield when the normalized height radius $r_{height}(\tau)$ is equal to the normalized ellipsoidal radius $r_{ellipsoidal}(\tau)$.
+Their difference is then zero. Likewise the difference of their squares is zero.
+
+\begin{equation}\label{eqn:intersection}
+0 = r_{height}(\tau) - r_{ellipsoidal}(\tau) 
+\end{equation}
+
+$r_{ellipsoidal}(\tau)$ may be determined by [\ref{eqn:r_ellipsoidal}].
+$r_{height}(\tau)$ is the quotient of the interpolated height $h(\tau)$ and the unnormalized magnitude of the ellipsoid's radius $R(\tau)$ in the given direction.
+
+\begin{equation}\label{eqn:r_height}
+ r_{height}(\tau) = \frac{h(\tau)}{R(\tau)}
+\end{equation}
+
+The interpolated height $h(\tau)$ is determined by generating the vector $\vec{v}_{proj}$ from the north pole of the ellipsoid $(0, 0, R_{po})$
+to the point of ray traversal $\vec{r}(\tau)$ (given by [\ref{eqn:r_of_tau}]),
+then using the point of intersection of this vector with the projection plane to calculate (u,v) coordinates with which to poll the heightfield data.
+The point of intersection with the projection plane is found by determining how far $\vec{v}_{proj}$ must be traversed, in terms of its $\hat{z}$ component,
+in order to hit the constant $\hat{z}$ position of the plane.
 
 \end{document}
