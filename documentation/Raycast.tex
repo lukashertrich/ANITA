@@ -74,9 +74,9 @@ where $r_{el}(\tau) = 1$.
 The magnitude of $r_{el}$ may be determined as follows:
 {\tiny
 \begin{equation}\label{eqn:r_el}
- r_{el}^2 = \frac{r_{0x}^2+r_{0y}^2}{R_{eq}^2}+\frac{r_{0z}^2}{R_{po}^2} \\
+ r_{el} = \sqrt{\frac{r_{0x}^2+r_{0y}^2}{R_{eq}^2}+\frac{r_{0z}^2}{R_{po}^2} \\
  + 2\tau\left(\frac{r_{0x} d_x+r_{0y} d_y}{R_{eq}^2}+\frac{r_{0z} d_z}{R_{po}^2}  \right) \\
- + \tau^2 \left( \frac{d_x^2+d_y^2}{R_{eq}^2} + \frac{d_z^2}{R_{po}^2} \right)
+ + \tau^2 \left( \frac{d_x^2+d_y^2}{R_{eq}^2} + \frac{d_z^2}{R_{po}^2} \right)}
 \end{equation}
 }
 
@@ -107,14 +107,27 @@ This yields the $(x'_{proj},y'_{proj})$ coordinates that may be converted to $(u
 \begin{equation}\label{eqn:x'_proj}
  (x'_{proj},y'_{proj}) = \alpha_{proj} (x_{proj},y_{proj})
 \end{equation}
-$R(\tau)$ may be determined from the geodetic latitude $\varphi$.
+$R(\tau)$ may be determined from the geodetic latitude $\varphi$, measured from the equator.
+
 \begin{equation}\label{eqn:phi}
  \varphi = \arcsin{\frac{z_{el}(\tau)}{r_{el}(\tau)}}
 \end{equation}
 
-\begin{equation}\label{eqn:R_of_tau}
- R(\varphi) = \sqrt{\frac{(R_{eq}^2\cos{\varphi})^2 + (R_{po}^2\sin{\varphi})^2}{(R_{eq}\cos{\varphi})^2 + (R_{po}\sin{\varphi})^2}}
+\begin{equation}\label{eqn:R_of_phi}
+ R(\varphi) = \sqrt{\frac{R_{eq}^4\cos^2{\varphi} + R_{po}^4\sin^2{\varphi}}{R_{eq}^2\cos^2{\varphi} + R_{po}^2\sin^2{\varphi}}}
 \end{equation}
+$R(\tau)$ may be expressed by substituting the expressions for $\cos^2{\varphi}$ and $\sin^2{\varphi}$ into [\ref{eqn:R_of_phi}].
+\begin{equation}\label{eqn:cos_sqr_phi}
+ \cos^2{\varphi} = \frac{x_{el}^2 + y_{el}^2}{r_{el}^2} = \frac{(r_{0x} + \tau d_x)^2 + (r_{0y} + \tau d_y)^2}{R_{eq}^2 r_{el}^2}
+\end{equation}
+\begin{equation}\label{eqn:sin_sqr_phi}
+ \sin^2{\varphi} = \frac{z_{el}^2}{r_{el}^2} = \frac{\left(r_{0z} + \tau d_z\right)^2}{R_{po}^2 r_{el}^2}
+\end{equation}
+Simplifying the substituted terms reduces $R(\tau)$ to:
+\begin{equation}\label{eqn:R_of_tau}
+ R(\tau) = \sqrt{\frac{R_{eq}^2 \left[ (r_{0x} + \tau d_x)^2 + (r_{0y} + \tau d_y)^2 \right] + R_{po}^2 \left[ (r_{0z} + \tau d_{z})^2 \right]}{(r_{0x} + \tau d_x)^2 + (r_{0y} + \tau d_y)^2 + (r_{0z} + \tau d_{z})^2}}
+\end{equation}
+
 
 
 
