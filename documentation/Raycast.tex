@@ -1,22 +1,64 @@
-\documentclass[a4paper,10pt]{article}
-\usepackage[utf8]{inputenc}
-\usepackage{textcomp}
+\documentclass[aps,prl,twocolumn,superscriptaddress]{revtex4-1}
 
-%opening
-\title{Raycast Against Polar Stereographic Heightfield}
-\author{Lukas R. Hertrich}
+\usepackage{graphicx}  % this is the up-to-date package for all figures
+\usepackage{amssymb}   % for math
+\usepackage{verbatim}  % for the comment environment
+\usepackage{color}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}	% for code snippets
+\usepackage{gensymb}
+
+% Settings for code appendices
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=C++,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+%\bibliographystyle{apsrev}
+
+% these are some custom control of the page size and margins
+% \topmargin= 0.2in  % these 1st two may be needed for some computers
+\textheight=9in
+\textwidth=6.5in
+% these next two lines give us centered text
+\oddsidemargin=0cm
+\evensidemargin=0cm
 
 \begin{document}
 
+\pagestyle{headings}
+
+\title{Polar Stereographic\\ Heightfield Intersection}
+
+\author{Lukas R. Hertrich}
+\affiliation{Student researcher at University of Hawaii at Manoa}
+
+\begin{abstract}
+In order to simulate neutrino and RF traversal of the Antarctic firn, raycasting may be used. This is accomplished by mapping bedrock elevation and ice sheet thickness
+data, provided by projects such as BEDMAP2, to the WGS84 ellipsoid.
+\end{abstract}
+
 \maketitle
-
-%\begin{abstract}
-
-%\end{abstract}
 
 \section{Data Format}
 Antarctic elevation and ice sheet data are provided by BEDMAP 2 in Antarctic polar stereographic projection.
-The projection plane is located at 71\textdegree~ south latitude and rays are cast down from the north pole to intersect the projection plane and ellipsoid.
+The projection plane is located at 71$\degree$ south latitude and rays are cast down from the north pole to intersect the projection plane and ellipsoid.
 The angle is in ellipsoidal coordinates determined by WGS84.
 \section{Raycast}
 The 3D raycast is parameterized with an initial position $\vec{r_0}$, a direction $\hat{d}$, and a parameter $\tau$, yielding
@@ -24,39 +66,58 @@ The 3D raycast is parameterized with an initial position $\vec{r_0}$, a directio
  \vec{r}(\tau) = \vec{r_0} + \tau \hat{d}
 \end{equation}
 This ray traverses flat, unmodified 3D cartesian space, meaning that distance traversed by the ray is equal to $\tau$.
-
 The same ray may be parameterized in terms of normalized cartesian coordinates,
-meaning that the $\vec{r_0}$ terms $r_x$ and $r_y$ are divided by the equatorial radius $R_{eq}$ of the WGS84 ellipsoid,
-and the $r_z$ term is divided by the polar radius $R_{po}$.
+meaning that the $\vec{r_0}$ terms $r_{0x}$ and $r_{0y}$ are divided by the equatorial radius $R_{eq}$ of the WGS84 ellipsoid,
+and the $r_{0z}$ term is divided by the polar radius $R_{po}$.
 This yields a magnitude of radius relative to the radius of the ellipsoid in the given direction, and a ray that intersects the ellipsoid's surface
-where $r_{ellipsoidal}(\tau) = 1$.
-The magnitude of $r_{ellipsoidal}$ may be determined as follows:
-
-\begin{equation}\label{eqn:r_ellipsoidal}
- r_{ellipsoidal} = \sqrt{\frac{r_x^2 + r_y^2}{R_{eq}^2} + \frac{r_z^2}{R_{po}^2}
- + 2t\left(\frac{r_x d_x + r_y d_y}{R_{eq}^2} + \frac{r_z d_z	}{R_{po}^2}  \right)
- + t^2 \left( \frac{d_x^2 + d_y^2}{R_{eq}^2} + \frac{d_z^2}{R_{po}^2} \right)}
+where $r_{el}(\tau) = 1$.
+The magnitude of $r_{el}$ may be determined as follows:
+{\tiny
+\begin{equation}\label{eqn:r_el}
+ r_{el}^2 = \frac{r_{0x}^2+r_{0y}^2}{R_{eq}^2}+\frac{r_{0z}^2}{R_{po}^2} \\
+ + 2\tau\left(\frac{r_{0x} d_x+r_{0y} d_y}{R_{eq}^2}+\frac{r_{0z} d_z}{R_{po}^2}  \right) \\
+ + \tau^2 \left( \frac{d_x^2+d_y^2}{R_{eq}^2} + \frac{d_z^2}{R_{po}^2} \right)
 \end{equation}
+}
 
-\section{Intersection With Heightfield}
-The ray intersects the heightfield when the normalized height radius $r_{height}(\tau)$ is equal to the normalized ellipsoidal radius $r_{ellipsoidal}(\tau)$.
+\section{Heightfield Intersection}
+The ray intersects the heightfield when the normalized surface radius $r_{surf}(\tau)$ is equal to the normalized ellipsoidal radius $r_{el}(\tau)$.
 Their difference is then zero. Likewise the difference of their squares is zero.
-
 \begin{equation}\label{eqn:intersection}
-0 = r_{height}(\tau) - r_{ellipsoidal}(\tau) 
+0 = r_{surf}(\tau) - r_{el}(\tau) 
+\end{equation}\\
+$r_{el}(\tau)$ may be determined by [\ref{eqn:r_el}].
+$r_{surf}(\tau)$ is unity added to the quotient of the interpolated height $h(\tau)$ and the unnormalized magnitude of the ellipsoid's radius $R(\tau)$ at the given latitude.
+\begin{equation}\label{eqn:r_surf}
+ r_{surf}(\tau) = 1 + \frac{h(\tau)}{R(\tau)}
 \end{equation}
-
-$r_{ellipsoidal}(\tau)$ may be determined by [\ref{eqn:r_ellipsoidal}].
-$r_{height}(\tau)$ is the quotient of the interpolated height $h(\tau)$ and the unnormalized magnitude of the ellipsoid's radius $R(\tau)$ in the given direction.
-
-\begin{equation}\label{eqn:r_height}
- r_{height}(\tau) = \frac{h(\tau)}{R(\tau)}
-\end{equation}
-
 The interpolated height $h(\tau)$ is determined by generating the vector $\vec{v}_{proj}$ from the north pole of the ellipsoid $(0, 0, R_{po})$
-to the point of ray traversal $\vec{r}(\tau)$ (given by [\ref{eqn:r_of_tau}]),
+to the point of ray traversal $\vec{r}(\tau)$ from [\ref{eqn:r_of_tau}],
 then using the point of intersection of this vector with the projection plane to calculate (u,v) coordinates with which to poll the heightfield data.
-The point of intersection with the projection plane is found by determining how far $\vec{v}_{proj}$ must be traversed, in terms of its $\hat{z}$ component,
-in order to hit the constant $\hat{z}$ position of the plane.
+The point of intersection with the projection plane is found by determining how far the direction of $\vec{v}_{proj}$ must be traversed, in terms of its $\hat{z}$ component,
+in order to hit the constant $\hat{z}$ position of the plane $z_{plane}$. This is accomplished by scaling $\vec{v}_{proj}$ by $\alpha_{proj}$ to form $\vec{v'}_{proj}$.
+\begin{equation}\label{eqn:v_proj}
+ \vec{v'}_{proj} = \alpha_{proj} \vec{v}_{proj}
+\end{equation}
+The scalar $\alpha_{proj}$ is determined as follows, with $z(\tau)$ being the $z$ component of $r(\tau)$ in [\ref{eqn:r_of_tau}]:
+\begin{equation}\label{eqn:alpha_proj}
+ \alpha_{proj} = \frac{-R_{po} - z_{plane}}{-R_{po} + z(\tau)}
+\end{equation}
+This yields the $(x'_{proj},y'_{proj})$ coordinates that may be converted to $(u,v)$ coordinates to poll and interpolate data.
+\begin{equation}\label{eqn:x'_proj}
+ (x'_{proj},y'_{proj}) = \alpha_{proj} (x_{proj},y_{proj})
+\end{equation}
+$R(\tau)$ may be determined from the geodetic latitude $\varphi$.
+\begin{equation}\label{eqn:phi}
+ \varphi = \arcsin{\frac{z_{el}(\tau)}{r_{el}(\tau)}}
+\end{equation}
+
+\begin{equation}\label{eqn:R_of_tau}
+ R(\varphi) = \sqrt{\frac{(R_{eq}^2\cos{\varphi})^2 + (R_{po}^2\sin{\varphi})^2}{(R_{eq}\cos{\varphi})^2 + (R_{po}\sin{\varphi})^2}}
+\end{equation}
+
+
+
+
 
 \end{document}
