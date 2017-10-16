@@ -147,28 +147,54 @@ Interpolation of the $r_{surf}^2$ values at the cell corners is accomplished as 
  && {} + r_{01}^2(1-u)(v) \\
  && {} + r_{11}^2uv
 \end{eqnarray}
-This results in a quadratic form, in terms of dependence on $\tau$, which can be shown by substituting terms successively:
+This results in a quadratic form, in terms of dependence on $\tau$, which can be shown by substituting terms successively and redefining constant expressions:
 \begin{eqnarray*}\label{eqn:r_surf_quadratic}
  r_{surf}^2 & = & r_{00}^2 + u(r_{10}^2 - r_{00}^2) + v(r_{01}^2 - r_{00}^2) \\
  && {} + uv(r_{11}^2 - r_{01}^2 - r_{10}^2 - r_{00}^2)
 \end{eqnarray}
 \begin{eqnarray*}
- r_{surf}^2 & = & r_{00}^2 \\
- && {} + \frac{x'_{proj} - x_{0,cell}}{x_{1,cell} - x_{0,cell}}(r_{10}^2 - r_{00}^2) \\
- && {} + \frac{y'_{proj} - y_{0,cell}}{y_{1,cell} - y_{0,cell}}(r_{01}^2 - r_{00}^2) \\
+ r_{surf}^2 & = & A + uB + vC + uvD
+\end{eqnarray}
+with $A = r_{00}^2$, $B = r_{10}^2 - r_{00}^2$, $C = r_{01}^2 - r_{00}^2$, and $D = r_{11}^2 - r_{01}^2 - r_{10}^2 - r_{00}^2$.
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{x'_{proj} - x_{0,cell}}{x_{1,cell} - x_{0,cell}}B \\
+ && {} + \frac{y'_{proj} - y_{0,cell}}{y_{1,cell} - y_{0,cell}}C \\
  && {} + \left(\frac{x'_{proj} - x_{0,cell}}{x_{1,cell} - x_{0,cell}}\right)\left(\frac{y'_{proj} - y_{0,cell}}{y_{1,cell} - y_{0,cell}}\right) \\
- && {} \cdot(r_{11}^2 - r_{01}^2 - r_{10}^2 - r_{00}^2)
+ && {} \cdot D
 \end{eqnarray}
 \begin{eqnarray*}
- r_{surf}^2 & = & r_{00}^2 \\
- && {} + \frac{\alpha_{proj} x(\tau) - x_{0,cell}}{x_{1,cell} - x_{0,cell}}(r_{10}^2 - r_{00}^2) \\
- && {} + \frac{\alpha_{proj} y(\tau) - y_{0,cell}}{y_{1,cell} - y_{0,cell}}(r_{01}^2 - r_{00}^2) \\
- && {} + \left(\frac{\alpha_{proj} x(\tau) - x_{0,cell}}{x_{1,cell} - x_{0,cell}}\right)\left(\frac{\alpha_{proj} y(\tau) - y_{0,cell}}{y_{1,cell} - y_{0,cell}}\right) \\
- && {} \cdot(r_{11}^2 - r_{01}^2 - r_{10}^2 - r_{00}^2)
+ r_{surf}^2 & = & A \\
+ && {} + \frac{x'_{proj} - x_{0,cell}}{E}B \\
+ && {} + \frac{y'_{proj} - y_{0,cell}}{F}C \\
+ && {} + \left(\frac{x'_{proj} - x_{0,cell}}{E}\right)\left(\frac{y'_{proj} - y_{0,cell}}{F}\right) \\
+ && {} \cdot D
 \end{eqnarray}
-
-
-
+with $E = x_{1,cell} - x_{0,cell}$ and $F = y_{1,cell} - y_{0,cell}$.
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{\alpha_{proj}x(\tau) - x_{0,cell}}{E}B \\
+ && {} + \frac{\alpha_{proj}y(\tau) - y_{0,cell}}{F}C \\
+ && {} + \left(\frac{\alpha_{proj}x(\tau) - x_{0,cell}}{E}\right)\left(\frac{\alpha_{proj}y(\tau) - y_{0,cell}}{F}\right) \\
+ && {} \cdot D
+\end{eqnarray}
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{\frac{-R_{po} - z_{plane}}{-R_{po} + z(\tau)}x(\tau) - x_{0,cell}}{E}B \\
+ && {} + \frac{\frac{-R_{po} - z_{plane}}{-R_{po} + z(\tau)}y(\tau) - y_{0,cell}}{F}C \\
+ && {} + \left(\frac{\frac{-R_{po} - z_{plane}}{-R_{po} + z(\tau)}x(\tau) - x_{0,cell}}{E}\right) \\
+ && {} \cdot \left(\frac{\frac{-R_{po} - z_{plane}}{-R_{po} + z(\tau)}y(\tau) - y_{0,cell}}{F}\right) \\
+ && {} \cdot D
+\end{eqnarray}
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{\frac{G (r_{0x} + d_x \tau)}{-R_{po} + r_{0z} + d_z \tau} - x_{0,cell}}{E}B \\
+ && {} + \frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}C \\
+ && {} + \left(\frac{\frac{G (r_{0x} + d_x \tau)}{-R_{po} + r_{0z} + d_z \tau} - x_{0,cell}}{E}\right) \\
+ && {} \cdot \left(\frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}\right) \\
+ && {} \cdot D
+\end{eqnarray}
+with $G = -R_{po} - z_{plane}$.
 
 
 \end{document}
