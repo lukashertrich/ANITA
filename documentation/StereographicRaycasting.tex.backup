@@ -1,4 +1,4 @@
-\documentclass[aps,ams,prl,twocolumn,superscriptaddress]{revtex4-1}
+\documentclass[aps,ams,prl,twocolumn,superscriptaddress,11pt]{revtex4-1}
 
 \usepackage{graphicx}  % this is the up-to-date package for all figures
 \usepackage{amssymb}   % for math
@@ -197,11 +197,42 @@ with $E = x_{1,cell} - x_{0,cell}$ and $F = y_{1,cell} - y_{0,cell}$.
 with $G = -R_{po} - z_{plane}$.
 \begin{eqnarray*}
  r_{surf}^2 & = & A \\
- && {} + \frac{G (r_{0x} + d_x \tau) - x_{0,cell}(-R_{po} + r_{0z} + d_z \tau)}{-R_{po} + r_{0z} + d_z \tau}\cdot \frac{B}{E} \\
- && {} + \frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}C \\
- && {} + \left(\frac{\frac{G (r_{0x} + d_x \tau)}{-R_{po} + r_{0z} + d_z \tau} - x_{0,cell}}{E}\right) \\
- && {} \cdot \left(\frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}\right) \\
- && {} \cdot D
+ && {} + \frac{G (r_{0x} + d_x \tau) - x_{0,cell}(H + d_z \tau)}{H + d_z \tau}\cdot \frac{B}{E} \\
+ && {} + \frac{G (r_{0y} + d_y \tau) - y_{0,cell}(H + d_z \tau)}{H + d_z \tau}\cdot \frac{C}{F} \\
+ && {} + \left(\frac{G (r_{0x} + d_x \tau) - x_{0,cell}(H + d_z \tau)}{H + d_z \tau}\right) \\
+ && {} \cdot \left(\frac{G (r_{0y} + d_y \tau) - y_{0,cell}(H + d_z \tau)}{H + d_z \tau}\right) \\
+ && {} \cdot \frac{D}{EF}
 \end{eqnarray}
+with $H = -R_{po} + r_{0z}$.
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{I + J\tau}{H + d_z \tau}\cdot \frac{B}{E} \\
+ && {} + \frac{K + L\tau}{H + d_z \tau}\cdot \frac{C}{F} \\
+ && {} + \frac{I + J\tau}{H + d_z \tau} \\
+ && {} \cdot \frac{K + L\tau}{H + d_z \tau} \\
+ && {} \cdot \frac{D}{EF}
+\end{eqnarray}
+with $I = G r_{0x} - x_{0,cell}H$, $J = G d_x - x_{0,cell}d_z$, $K = G r_{0y} - y_{0,cell}H$, and $L = G d_y - y_{0,cell}d_z$.
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{M + N\tau}{H + d_z \tau} \\
+ && {} + \frac{O + P\tau}{H + d_z \tau} \\
+ && {} + \frac{I + J\tau}{H + d_z \tau} \\
+ && {} \cdot \frac{K + L\tau}{H + d_z \tau} \\
+ && {} \cdot \frac{D}{EF}
+\end{eqnarray}
+with $M = \frac{BI}{E}$, $N = \frac{BJ}{E}$, $O = \frac{CK}{F}$, and $P = \frac{CL}{F}$.
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{M + O + (N + P)\tau}{H + d_z \tau} \\
+ && {} + \frac{IK + (IL + JK)\tau + JL\tau^2}{H^2 + 2Hd_z\tau + d_{z}^2 \tau^2} \\
+ && {} \cdot \frac{D}{EF}
+\end{eqnarray}
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{Q + R\tau + S\tau^2}{H^2 + 2Hd_z\tau + d_{z}^2 \tau^2}
+\end{eqnarray}
+with $Q = AH^2 + H(M+O)+\frac{IKD}{EF}$, $R = 2AHd_z + H(N+P) + d_z(M+O) + \frac{D(IL+JK)}{EF}$,and $S = d_z(N+P) + \frac{JLD}{EF}$.
 
 \end{document}
+

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2017.5.3)  15 OCT 2017 22:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2017.5.3)  16 OCT 2017 00:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -73,9 +73,6 @@ Class revtex4-1 Info: RevTeX society APS selected on input line 31.
 )
 Class revtex4-1 Info: Selecting journal prl on input line 7544.
 Class revtex4-1 Info: APS journal PRL selected on input line 7545.
-
-
-Class revtex4-1 Warning: No type size specified, using default 10.
 
 (/usr/share/texlive/texmf-dist/tex/latex/revtex/aps10pt4-1.rtx
 File: aps10pt4-1 2010/07/25/20:33:00 4.1r (http://publish.aps.org/revtex4/ for 
@@ -614,27 +611,65 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.231 \end{eqnarray}
+l.230 \end{eqnarray}
                     
 Your command was ignored.
 Type  I <command> <return>  to replace it with another command,
 or  <return>  to continue without it.
 
+! Misplaced alignment tab character &.
+l.232  r_{surf}^2 &
+                    = & \frac{Q + R\tau + S\tau^2}{H^2 + 2Hd_z\tau + d_{z}^2...
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.232  r_{surf}^2 & = &
+                        \frac{Q + R\tau + S\tau^2}{H^2 + 2Hd_z\tau + d_{z}^2...
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
 No file StereographicRaycasting.bbl.
+
+Underfull \hbox (badness 10000) in paragraph at lines 233--241
+\OT1/cmr/m/n/10 with $\OML/cmm/m/it/10 Q \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 AH[
+] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 H\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 M \OT1/
+cmr/m/n/10 + \OML/cmm/m/it/10 O\OT1/cmr/m/n/10 ) + []$,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 233--241
+
+ []
+
+
+Underfull \hbox (badness 2781) in paragraph at lines 233--241
+\OT1/cmr/m/n/10 Manipulating $\OML/cmm/m/it/10 r[]\OT1/cmr/m/n/10 (\OML/cmm/m/i
+t/10 ^^\\OT1/cmr/m/n/10 )$ to share the de-nom-i-na-tor
+ []
+
 [3]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 235.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 241.
  (./StereographicRaycasting.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 235.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 235.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 241.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 241.
 Package rerunfilecheck Info: File `StereographicRaycasting.out' has not changed
 .
 (rerunfilecheck)             Checksum: B22D368D6EA8A75AAA61F558B0AAFC7C;388.
  ) 
 Here is how much of TeX's memory you used:
- 8615 strings out of 494945
- 124095 string characters out of 6181033
- 290571 words of memory out of 5000000
- 11803 multiletter control sequences out of 15000+600000
+ 8619 strings out of 494945
+ 124154 string characters out of 6181033
+ 297581 words of memory out of 5000000
+ 11806 multiletter control sequences out of 15000+600000
  10052 words of font info for 39 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  33i,9n,58p,268b,381s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -651,10 +686,10 @@ m/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.p
 fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb>
-Output written on StereographicRaycasting.pdf (3 pages, 168430 bytes).
+Output written on StereographicRaycasting.pdf (3 pages, 170391 bytes).
 PDF statistics:
- 122 PDF objects out of 1000 (max. 8388607)
- 101 compressed objects within 2 object streams
- 20 named destinations out of 1000 (max. 500000)
+ 125 PDF objects out of 1000 (max. 8388607)
+ 104 compressed objects within 2 object streams
+ 21 named destinations out of 1000 (max. 500000)
  49 words of extra memory for PDF output out of 10000 (max. 10000000)
 

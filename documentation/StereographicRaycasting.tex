@@ -1,4 +1,4 @@
-\documentclass[aps,ams,prl,twocolumn,superscriptaddress]{revtex4-1}
+\documentclass[aps,ams,prl,twocolumn,superscriptaddress,10pt]{revtex4-1}
 
 \usepackage{graphicx}  % this is the up-to-date package for all figures
 \usepackage{amssymb}   % for math
@@ -225,12 +225,18 @@ with $M = \frac{BI}{E}$, $N = \frac{BJ}{E}$, $O = \frac{CK}{F}$, and $P = \frac{
 \begin{eqnarray*}
  r_{surf}^2 & = & A \\
  && {} + \frac{M + O + (N + P)\tau}{H + d_z \tau} \\
- && {} + \frac{I + J\tau}{H + d_z \tau} \\
- && {} \cdot \frac{K + L\tau}{H + d_z \tau} \\
+ && {} + \frac{IK + (IL + JK)\tau + JL\tau^2}{H^2 + 2Hd_z\tau + d_{z}^2 \tau^2} \\
  && {} \cdot \frac{D}{EF}
 \end{eqnarray}
-
-
-
+\begin{equation}\label{eqn:reduced}
+ r_{surf}^2 & = & \frac{Q + R\tau + S\tau^2}{H^2 + 2Hd_z\tau + d_{z}^2 \tau^2}
+\end{equation}
+with $Q = AH^2 + H(M+O)+\frac{IKD}{EF}$, $R = 2AHd_z + H(N+P) + d_z(M+O) + \frac{D(IL+JK)}{EF}$, and $S = Ad_{z}^2 + d_z(N+P) + \frac{JLD}{EF}$.
+\\
+\\
+Manipulating $r_{el}^2(\tau)$ to share the denominator of Eqn. (\ref{eqn:reduced}) yields a quartic equation over a quadratic equation.
+Real roots of the quartic determine the values of $\tau$ that result in an intersection of the parameterized ray in
+Eqn. (\ref{eqn:r_of_tau}) with the surface in the tested data cell.
+Real roots of the quadratic in the denominator represent rays that pass tangentially through the north pole, yielding an undefined projection.
 \end{document}
 
