@@ -130,7 +130,7 @@ Simplifying the substituted terms reduces $R(\tau)$ to:
 \section{Interpolation of Height Data}
 Precomputing the values of $r_{surf}^2$ at data grid points allows Eqn. (\ref{eqn:intersection}) to be solved analytically for a given data cell.
 There is a negligible error introduced by interpolating the square of the surface radius rather than the radius itself.
-The hypothetical error introduced by considering the unrealistic situation of adjacent extrema of Antarctic elevation in a data cell yields an error on the order of one meter.
+The hypothetical error introduced by considering the unrealistic situation of adjacent maxima and minima of Antarctic elevation in a data cell yields an error on the order of one meter.
 This is well within the range of uncertainty in the BEDMAP 2 measurements themselves, which document uncertainties of as much as 1 km for ice thickness data in certain regions. 
 
 Normalized $(u,v)$ coordinates for interpolation in the range $[0,1]$ are generated using the results of Eqn. (\ref{eqn:x'y'_proj}) and the coordinates at the corners of a given data cell.
@@ -147,6 +147,26 @@ Interpolation of the $r_{surf}^2$ values at the cell corners is accomplished as 
  && {} + r_{01}^2(1-u)(v) \\
  && {} + r_{11}^2uv
 \end{eqnarray}
+This results in a quadratic form, in terms of dependence on $\tau$, which can be shown by substituting terms successively:
+\begin{eqnarray*}\label{eqn:r_surf_quadratic}
+ r_{surf}^2 & = & r_{00}^2 + u(r_{10}^2 - r_{00}^2) + v(r_{01}^2 - r_{00}^2) \\
+ && {} + uv(r_{11}^2 - r_{01}^2 - r_{10}^2 - r_{00}^2)
+\end{eqnarray}
+\begin{eqnarray*}
+ r_{surf}^2 & = & r_{00}^2 \\
+ && {} + \frac{x'_{proj} - x_{0,cell}}{x_{1,cell} - x_{0,cell}}(r_{10}^2 - r_{00}^2) \\
+ && {} + \frac{y'_{proj} - y_{0,cell}}{y_{1,cell} - y_{0,cell}}(r_{01}^2 - r_{00}^2) \\
+ && {} + \left(\frac{x'_{proj} - x_{0,cell}}{x_{1,cell} - x_{0,cell}}\right)\left(\frac{y'_{proj} - y_{0,cell}}{y_{1,cell} - y_{0,cell}}\right) \\
+ && {} \cdot(r_{11}^2 - r_{01}^2 - r_{10}^2 - r_{00}^2)
+\end{eqnarray}
+\begin{eqnarray*}
+ r_{surf}^2 & = & r_{00}^2 \\
+ && {} + \frac{\alpha_{proj} x(\tau) - x_{0,cell}}{x_{1,cell} - x_{0,cell}}(r_{10}^2 - r_{00}^2) \\
+ && {} + \frac{\alpha_{proj} y(\tau) - y_{0,cell}}{y_{1,cell} - y_{0,cell}}(r_{01}^2 - r_{00}^2) \\
+ && {} + \left(\frac{\alpha_{proj} x(\tau) - x_{0,cell}}{x_{1,cell} - x_{0,cell}}\right)\left(\frac{\alpha_{proj} y(\tau) - y_{0,cell}}{y_{1,cell} - y_{0,cell}}\right) \\
+ && {} \cdot(r_{11}^2 - r_{01}^2 - r_{10}^2 - r_{00}^2)
+\end{eqnarray}
+
 
 
 
