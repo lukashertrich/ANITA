@@ -57,9 +57,9 @@ data, provided by projects such as BEDMAP 2, to the WGS84 ellipsoid.
 \maketitle
 
 \section{Data Format}
-Antarctic elevation and ice sheet data are provided by BEDMAP 2 in Antarctic polar stereographic projection.
+Antarctic elevation and ice sheet data are provided by BEDMAP 2 in Antarctic polar stereographic projection with a 1 km resolution.
 The projection plane is located at 71$\degree$ south latitude and rays are cast down from the north pole to intersect the projection plane and ellipsoid.
-The angle is in ellipsoidal coordinates determined by WGS84.
+The angle is geodetic latitude determined by WGS84.
 \section{Raycast}
 The 3D raycast is parameterized with an initial position $\vec{r_0}$, a direction $\hat{d}$, and a parameter $\tau$, yielding
 \begin{equation}\label{eqn:r_of_tau}
@@ -96,7 +96,7 @@ in order to hit the constant $\hat{z}$ position of the plane $z_{plane}$. This i
 \begin{equation}\label{eqn:v_proj}
  \vec{v'}_{proj} = \alpha_{proj} \vec{v}_{proj}
 \end{equation}
-The scalar $\alpha_{proj}$ is determined as follows, with $z(\tau)$ being the $z$ component of $r(\tau)$ in Eqn. (\ref{eqn:r_of_tau}):
+The scalar $\alpha_{proj}$ is determined as follows, with $z(\tau)$ being the $z$ component of $\vec{r}(\tau)$ in Eqn. (\ref{eqn:r_of_tau}):
 \begin{equation}\label{eqn:alpha_proj}
  \alpha_{proj} = \frac{-R_{po} - z_{plane}}{-R_{po} + z(\tau)}
 \end{equation}
@@ -188,11 +188,20 @@ with $E = x_{1,cell} - x_{0,cell}$ and $F = y_{1,cell} - y_{0,cell}$.
 \end{eqnarray}
 \begin{eqnarray*}
  r_{surf}^2 & = & A \\
- && {} + \frac{\frac{G}{-R_{po} + z(\tau)}x(\tau) - x_{0,cell}}{E}B \\
- && {} + \frac{\frac{G}{-R_{po} + z(\tau)}y(\tau) - y_{0,cell}}{F}C \\
- && {} + \left(\frac{\frac{G}{-R_{po} + z(\tau)}x(\tau) - x_{0,cell}}{E}\right) \\
- && {} \cdot \left(\frac{\frac{G}{-R_{po} + z(\tau)}y(\tau) - y_{0,cell}}{F}\right) \\
+ && {} + \frac{\frac{G (r_{0x} + d_x \tau)}{-R_{po} + r_{0z} + d_z \tau} - x_{0,cell}}{E}B \\
+ && {} + \frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}C \\
+ && {} + \left(\frac{\frac{G (r_{0x} + d_x \tau)}{-R_{po} + r_{0z} + d_z \tau} - x_{0,cell}}{E}\right) \\
+ && {} \cdot \left(\frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}\right) \\
  && {} \cdot D
 \end{eqnarray}
 with $G = -R_{po} - z_{plane}$.
+\begin{eqnarray*}
+ r_{surf}^2 & = & A \\
+ && {} + \frac{G (r_{0x} + d_x \tau) - x_{0,cell}(-R_{po} + r_{0z} + d_z \tau)}{-R_{po} + r_{0z} + d_z \tau}\cdot \frac{B}{E} \\
+ && {} + \frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}C \\
+ && {} + \left(\frac{\frac{G (r_{0x} + d_x \tau)}{-R_{po} + r_{0z} + d_z \tau} - x_{0,cell}}{E}\right) \\
+ && {} \cdot \left(\frac{\frac{G (r_{0y} + d_y \tau)}{-R_{po} + r_{0z} + d_z \tau} - y_{0,cell}}{F}\right) \\
+ && {} \cdot D
+\end{eqnarray}
+
 \end{document}

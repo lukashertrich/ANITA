@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2017.5.3)  15 OCT 2017 20:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Debian) (preloaded format=pdflatex 2017.5.3)  15 OCT 2017 22:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**Raycast.tex
-(./Raycast.tex
+**StereographicRaycasting.tex
+(./StereographicRaycasting.tex
 LaTeX2e <2017/01/01> patch level 3
 Babel <3.9r> and hyphenation patterns for 3 language(s) loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/revtex/revtex4-1.cls
@@ -319,8 +319,8 @@ Class revtex4-1 Info: multicol was not loaded (OK!) on input line 43.
 LaTeX Warning: Unused global option(s):
     [ams].
 
-(./Raycast.aux)
-\openout1 = `Raycast.aux'.
+(./StereographicRaycasting.aux)
+\openout1 = `StereographicRaycasting.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 43.
 LaTeX Font Info:    ... okay on input line 43.
@@ -382,9 +382,9 @@ LaTeX Info: Redefining \ref on input line 43.
 LaTeX Info: Redefining \pageref on input line 43.
 LaTeX Info: Redefining \nameref on input line 43.
 
-(./Raycast.out) (./Raycast.out)
+(./StereographicRaycasting.out) (./StereographicRaycasting.out)
 \@outlinefile=\write4
-\openout4 = `Raycast.out'.
+\openout4 = `StereographicRaycasting.out'.
 
 \c@lstlisting=\count121
 LaTeX Info: Redefining \celsius on input line 43.
@@ -400,7 +400,7 @@ Package gensymb Info: Using \Omega for \ohm on input line 43.
 Package gensymb Warning: Not defining \micro.
 
 Class revtex4-1 Info: Taking \maketitle back from hyperref on input line 43.
-\openout3 = `RaycastNotes.bib'.
+\openout3 = `StereographicRaycastingNotes.bib'.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
@@ -568,23 +568,76 @@ Your command was ignored.
 Type  I <command> <return>  to replace it with another command,
 or  <return>  to continue without it.
 
-No file Raycast.bbl.
+
+! LaTeX Error: \begin{eqnarray*} on input line 198 ended by \end{eqnarray}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.205 \end{eqnarray}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{eqnarray*} on input line 207 ended by \end{eqnarray}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.214 \end{eqnarray}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{eqnarray*} on input line 216 ended by \end{eqnarray}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.223 \end{eqnarray}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: \begin{eqnarray*} on input line 225 ended by \end{eqnarray}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.231 \end{eqnarray}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+No file StereographicRaycasting.bbl.
 [3]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 200.
- (./Raycast.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 200.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 200.
-Package rerunfilecheck Info: File `Raycast.out' has not changed.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 235.
+ (./StereographicRaycasting.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 235.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 235.
+Package rerunfilecheck Info: File `StereographicRaycasting.out' has not changed
+.
 (rerunfilecheck)             Checksum: B22D368D6EA8A75AAA61F558B0AAFC7C;388.
  ) 
 Here is how much of TeX's memory you used:
  8615 strings out of 494945
- 123871 string characters out of 6181033
- 265571 words of memory out of 5000000
+ 124095 string characters out of 6181033
+ 290571 words of memory out of 5000000
  11803 multiletter control sequences out of 15000+600000
  10052 words of font info for 39 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 33i,9n,58p,252b,381s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 33i,9n,58p,268b,381s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texli
@@ -598,7 +651,7 @@ m/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.p
 fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb>
-Output written on Raycast.pdf (3 pages, 162622 bytes).
+Output written on StereographicRaycasting.pdf (3 pages, 168430 bytes).
 PDF statistics:
  122 PDF objects out of 1000 (max. 8388607)
  101 compressed objects within 2 object streams
