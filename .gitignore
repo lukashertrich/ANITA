@@ -27,6 +27,6 @@
 *.out
 *.app
 
-# Text Files and Data Files (Antarctic ASCII Data Are too Large)
-*.txt
+# Float Files and Data Files (Antarctic ASCII Data Are too Large)
 *.dat
+*.flt
