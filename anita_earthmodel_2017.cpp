@@ -16,6 +16,11 @@
  * 		GLOBAL CONSTANTS
  */
 
+// Data filepaths
+const std::string filePathBedElev = "bedmap2_bed.txt";
+const std::string filePathIceElev = "bedmap2_surface.txt";
+const std::string filePathGeoidToWGS84 = "gl04c_geoid_to_wgs84.txt";
+
 // Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
 // Antarctic data will be mapped on top of crust extruded through sea level
 const double DISTANCE_TO_HORIZON = 6.000e5; // meters
@@ -67,6 +72,13 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
 	std::vector<double>{12581.5, -1263.8, -3642.6, -5528.1},	// Outer Core
 	std::vector<double>{13088.5, -8838.1}										// Inner Core
 	};
+
+/*
+ *		GLOBAL VARIABLES
+ */
+
+std::vector<double> bedRadNormSqr;
+std::vector<double> iceRadNormSqr;
 
 /*
  * 		FUNCTIONS

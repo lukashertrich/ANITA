@@ -27,6 +27,10 @@
 *.out
 *.app
 
-# Float Files and Data Files (Antarctic ASCII Data Are too Large)
+# Executable and Data Files (Antarctic ASCII data are too large)
 *.dat
 *.flt
+anita_earthmodel_2017
+bedmap2_bed.txt
+bedmap2_surface.txt
+gl04c_geoid_to_wgs84.txt
