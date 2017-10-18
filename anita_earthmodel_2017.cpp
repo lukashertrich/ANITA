@@ -19,7 +19,7 @@
 // Data filepaths
 const std::string filePathBedElev = "bedmap2_bed.txt";
 const std::string filePathIceElev = "bedmap2_surface.txt";
-const std::string filePathGeoidToWGS84 = "gl04c_geoid_to_wgs84.txt";
+const std::string filePathGeoidToWGS84 = "gl04c_geoid_to_wgs84.txt"; // Note that BEDMAP 2 provides 'geiod' spelling. File must be renamed.
 
 // Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
 // Antarctic data will be mapped on top of crust extruded through sea level
@@ -77,12 +77,24 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
  *		GLOBAL VARIABLES
  */
 
-std::vector<double> bedRadNormSqr;
+// Serial packing of rows
+std::vector<double> geoidToWGS84;
+std::vector<double> bedRadNormSqr; 
 std::vector<double> iceRadNormSqr;
 
 /*
  * 		FUNCTIONS
  */
+
+void precomputeRadNormSqr(){
+	std::ifstream geoidToWGS84File(filePathGeoidToWGS84);
+	std::ifstream bedElevFile(filePathBedElev);
+	std::ifstream iceElevFile(filePathIceElev);
+	// std::vector<double> bedRadNormSqr{
+	// 	std::istream_iterator<double>(bedElevFile),
+	// 	std::istream_iterator<double>(),
+	// 	std::back_inserter(bedRadNormSqr)};
+}
 
 void normalizeVector(std::vector<double> v){
 	double magsqr = 0;
