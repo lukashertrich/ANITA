@@ -4,12 +4,15 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "group":"build",
             "taskName": "Build g++",
             "type": "shell",
             "command": "g++",
             "args": [
                 "-g",
-                "anita_earthmodel_2017.cpp"
+                "-O3",
+                "anita_earthmodel_2017.cpp",
+                "-o anita_earthmodel_2017"
             ],
             "problemMatcher": [
                 "$gcc"
