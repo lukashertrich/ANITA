@@ -26,3 +26,6 @@
 *.exe
 *.out
 *.app
+
+# Text Files (Antarctic ASCII Data Are too Large)
+*.txt
