@@ -36,3 +36,4 @@ bedmap2_surface.txt
 gl04c_geoid_to_wgs84.txt
 # Don't include the provided misspelled file either
 gl04c_geiod_to_wgs84.txt
+diagnostic.dat

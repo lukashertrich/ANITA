@@ -11,6 +11,8 @@
 #include <fstream>
 #include <complex>
 #include <cmath>
+#include <algorithm>
+#include <iterator>
 
 /*
  * 		GLOBAL CONSTANTS
@@ -78,22 +80,33 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
  */
 
 // Serial packing of rows
-std::vector<double> geoidToWGS84;
-std::vector<double> bedRadNormSqr; 
-std::vector<double> iceRadNormSqr;
+std::vector<double> geoidToWGS84Data;
+std::vector<double> bedElevationData; 
+std::vector<double> iceElevationData;
 
 /*
  * 		FUNCTIONS
  */
 
-void precomputeRadNormSqr(){
+void importElevationData(){
+	std::cout << "Importing elevation data..." << std::endl;
 	std::ifstream geoidToWGS84File(filePathGeoidToWGS84);
 	std::ifstream bedElevFile(filePathBedElev);
 	std::ifstream iceElevFile(filePathIceElev);
-	// std::vector<double> bedRadNormSqr{
-	// 	std::istream_iterator<double>(bedElevFile),
-	// 	std::istream_iterator<double>(),
-	// 	std::back_inserter(bedRadNormSqr)};
+
+	std::vector<std::string> testVec(std::istream_iterator<std::string>(geoidToWGS84Data), std::istream_iterator<std::string>);
+
+	// Read file into vector
+	std::copy(
+		(std::istream_iterator<double>(geoidToWGS84File)),
+		 std::istream_iterator<double>(),
+		 std::back_inserter(geoidToWGS84Data)
+	);
+	std::vector<double> bedElevData;
+	std::vector<double> iceElevData;
+		
+//	std::cout << geoidToWGS84Data.at(100) << std::endl;
+	std::cout << "Done importing elevation data." << std::endl;
 }
 
 void normalizeVector(std::vector<double> v){
@@ -306,6 +319,7 @@ void testDensityTraversal(){
 
 int main(int argc, char **argv)
 {
+	importElevationData();
 	printConstants();
 	if(argc < 3){
 		printUsage();
@@ -325,7 +339,9 @@ int main(int argc, char **argv)
 		double crossSectionFactor = atof(argv[5]);
 		
 	}
+	
 	testDensityTraversal();
 	std::cout << "Done..." << std::endl;
+	std::cin.get(); // Wait for user input to terminate
 	return 0;
 }
