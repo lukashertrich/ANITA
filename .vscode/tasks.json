@@ -9,8 +9,8 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "-g",
-                "-O3",
+                "-ggdb",
+                "-g3",
                 "anita_earthmodel_2017.cpp",
                 "-o anita_earthmodel_2017"
             ],

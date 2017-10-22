@@ -89,23 +89,42 @@ std::vector<double> iceElevationData;
  */
 
 void importElevationData(){
+	geoidToWGS84Data.reserve(6667*6667);
+	bedElevationData.reserve(6667*6667);
+	iceElevationData.reserve(6667*6667);
 	std::cout << "Importing elevation data..." << std::endl;
 	std::ifstream geoidToWGS84File(filePathGeoidToWGS84);
 	std::ifstream bedElevFile(filePathBedElev);
 	std::ifstream iceElevFile(filePathIceElev);
 
-	std::vector<std::string> testVec(std::istream_iterator<std::string>(geoidToWGS84Data), std::istream_iterator<std::string>);
+	// Read file into memory
+	auto ss = std::stringstream{};
+	ss << geoidToWGS84File.rdbuf();
+	std::string valueString;
+	while(ss >> valueString){
+		geoidToWGS84Data.push_back(stod(valueString));
+	}
 
-	// Read file into vector
-	std::copy(
-		(std::istream_iterator<double>(geoidToWGS84File)),
-		 std::istream_iterator<double>(),
-		 std::back_inserter(geoidToWGS84Data)
-	);
-	std::vector<double> bedElevData;
-	std::vector<double> iceElevData;
-		
-//	std::cout << geoidToWGS84Data.at(100) << std::endl;
+	ss = std::stringstream{};
+	ss << bedElevFile.rdbuf();
+	while(ss >> valueString){
+		bedElevationData.push_back(stod(valueString));
+	}
+
+	ss = std::stringstream{};
+	ss << iceElevFile.rdbuf();
+	while(ss >> valueString){
+		iceElevationData.push_back(stod(valueString));
+	}
+
+	for(unsigned long long i = 0; i < geoidToWGS84Data.size(); i++){
+		if(geoidToWGS84Data[i] != -9999.){
+			bedElevationData[i] += geoidToWGS84Data[i];
+			iceElevationData[i] += geoidToWGS84Data[i];
+		}
+	}
+
+	std::cout << iceElevationData[6667*(6667/2)+(6667/2)] << std::endl;
 	std::cout << "Done importing elevation data." << std::endl;
 }
 
@@ -342,6 +361,7 @@ int main(int argc, char **argv)
 	
 	testDensityTraversal();
 	std::cout << "Done..." << std::endl;
+	std::cout << "Press any key to terminate." << std::endl;
 	std::cin.get(); // Wait for user input to terminate
 	return 0;
 }
