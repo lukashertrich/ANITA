@@ -3,6 +3,7 @@
  */
 
 #define _USE_MATH_DEFINES
+
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -21,9 +22,9 @@
  */
 
 // Data filepaths
-const std::string filePathBedElev = "bedmap2_bed.txt";
-const std::string filePathIceElev = "bedmap2_surface.txt";
-const std::string filePathGeoidToWGS84 = "gl04c_geiod_to_wgs84.txt"; // Note that BEDMAP 2 provides 'geiod' spelling.
+const std::string filePathBedElev = "bedmap2_bed.flt";
+const std::string filePathIceElev = "bedmap2_surface.flt";
+const std::string filePathGeoidToWGS84 = "gl04c_geiod_to_wgs84.flt"; // Note that BEDMAP 2 provides 'geiod' spelling.
 
 // Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
 // Antarctic data will be mapped on top of crust extruded through sea level
@@ -98,15 +99,18 @@ const std::vector<char> NUMERICAL_CHARS{
  */
 
 // Serial packing of rows
-std::vector<double> geoidToWGS84Data(6667*6667);
-std::vector<double> bedElevationData(6667*6667); 
-std::vector<double> iceElevationData(6667*6667);
+std::vector<double> geoidToWGS84Data;
+std::vector<double> bedElevationData; 
+std::vector<double> iceElevationData;
+std::vector<float> geoidData(6667*6667);
+std::vector<float> bedData(6667*6667);
+std::vector<float> iceData(6667*6667);
 
 /*
  * 		FUNCTIONS
  */
 
-void parseStringToVectorDouble(std::string dataString, std::vector<double> dataVector){
+void parseStringToVectorDouble(std::string &dataString, std::vector<double> &dataVector){
 	std::string number;	
 	for(unsigned long long i = 0; i < dataString.length(); i++){
 		switch (dataString[i]){
@@ -126,16 +130,22 @@ void parseStringToVectorDouble(std::string dataString, std::vector<double> dataV
 			break;
 			default:
 			if(number.size()){
-				// std::cout << number << std::endl;
+				// std::cout << stod(number) << std::endl;
 				dataVector.push_back(stod(number));
-				number.clear();
+				// std::cout << dataVector.size() << std::endl;
+				number.clear();				
 			}
 			break;
 		}		
 	}	
 }
 
-void importDataFile(std::ifstream file, std::vector<double> dataVector){
+void importDataFile(std::ifstream file, std::vector<double> &dataVector){
+	// bufferStream << file.rdbuf();
+	// bufferString = bufferStream.str();
+	// parseStringToVectorDouble(bufferString, dataVector);
+	// bufferStream.clear();
+	// bufferString.clear();
 	std::string line;
 	while(std::getline(file, line)){
 		switch (line[0]){
@@ -151,27 +161,48 @@ void importDataFile(std::ifstream file, std::vector<double> dataVector){
 			case '7':
 			case '8':
 			case '9':
-				parseStringToVectorDouble(line, dataVector);
+				parseStringToVectorDouble(line, dataVector);				
 				break;
 			default:
 				break;
 		}
 	}
+	std::cout << dataVector.size() << std::endl;
 }
 
+void loadData(){
+	std::cout << "Loading Antarctic bedrock and ice surface elevations into memory..." << std::endl;
+	std::ifstream dataFile(filePathGeoidToWGS84, std::ios::binary);
+	dataFile.read(reinterpret_cast<char*>(geoidData.data()), geoidData.size()*sizeof(float));	
+	dataFile.close();
+	dataFile.open(filePathBedElev);
+	dataFile.read(reinterpret_cast<char*>(bedData.data()), bedData.size()*sizeof(float));
+	dataFile.close();
+	dataFile.open(filePathIceElev);
+	dataFile.read(reinterpret_cast<char*>(iceData.data()), iceData.size()*sizeof(float));
+
+	// Add geoid data to bed and ice to convert to WGS84 reference
+	for(unsigned long long i = 0; i < geoidData.size(); i++){
+		bedData[i] += geoidData[i];
+		iceData[i] += geoidData[i];
+	}
+
+	std::cout << "Loading complete." << std::endl;
+}
 
 void importElevationData(){
-	// Memory may be a little sparse for doing all files at once. Hence the actual non-parallel threads.
+	
+	geoidToWGS84Data.reserve(6667*6667);
+	bedElevationData.reserve(6667*6667);
+	iceElevationData.reserve(6667*6667);
+	
 	std::cout << "Importing elevation data..." << std::endl;
-	std::thread t1(importDataFile, std::ifstream(filePathGeoidToWGS84), geoidToWGS84Data);
+	std::thread t1(importDataFile, std::ifstream(filePathGeoidToWGS84), std::ref(geoidToWGS84Data));	
+	std::thread t2(importDataFile, std::ifstream(filePathBedElev), std::ref(bedElevationData));	
+	std::thread t3(importDataFile, std::ifstream(filePathIceElev), std::ref(iceElevationData));	
 	t1.join();
-	std::cout << "Geoid to ellipse transforms imported." << std::endl;
-	std::thread t2(importDataFile, std::ifstream(filePathBedElev), bedElevationData);
 	t2.join();
-	std::cout << "Bedrock elevation data imported." << std::endl;
-	std::thread t3(importDataFile, std::ifstream(filePathIceElev), iceElevationData);	
 	t3.join();
-	std::cout << "Ice sheet elevation data imported." << std::endl;
 
 	std::cout << geoidToWGS84Data.size() << std::endl;
 	std::cout << bedElevationData.size() << std::endl;
@@ -399,7 +430,8 @@ void testDensityTraversal(){
 
 int main(int argc, char **argv)
 {
-	importElevationData();
+	loadData();
+	// importElevationData();
 	printConstants();
 	// if(argc < 3){
 	// 	printUsage();
