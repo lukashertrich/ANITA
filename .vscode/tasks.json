@@ -9,8 +9,11 @@
             "type": "shell",
             "command": "g++",
             "args": [
+                "-Wall",
+                "-std=c++11",
+                // "-pthread",
                 "-ggdb",
-                "-g3",
+                "-O3",
                 "anita_earthmodel_2017.cpp",
                 "-o anita_earthmodel_2017"
             ],

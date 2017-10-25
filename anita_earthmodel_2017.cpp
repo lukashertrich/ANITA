@@ -2,6 +2,8 @@
  * 		ANITA Earth Model
  */
 
+#define _USE_MATH_DEFINES
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -19,9 +21,9 @@
  */
 
 // Data filepaths
-const std::string filePathBedElev = "bedmap2_bed.txt";
-const std::string filePathIceElev = "bedmap2_surface.txt";
-const std::string filePathGeoidToWGS84 = "gl04c_geoid_to_wgs84.txt"; // Note that BEDMAP 2 provides 'geiod' spelling. File must be renamed.
+const std::string filePathBedElev = "bedmap2_bed.flt";
+const std::string filePathIceElev = "bedmap2_surface.flt";
+const std::string filePathGeoidToWGS84 = "gl04c_geiod_to_wgs84.flt"; // Note that BEDMAP 2 provides 'geiod' spelling.
 
 // Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
 // Antarctic data will be mapped on top of crust extruded through sea level
@@ -80,64 +82,93 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
  */
 
 // Serial packing of rows
-std::vector<double> geoidToWGS84Data;
-std::vector<double> bedElevationData; 
-std::vector<double> iceElevationData;
+std::vector<double> geoidToWGS84Data(6667*6667);
+std::vector<double> bedElevationData(6667*6667); 
+std::vector<double> iceElevationData(6667*6667);
 
 /*
  * 		FUNCTIONS
  */
 
+void swap8(void *v)
+{
+    char    in[8], out[8];
+    std::memcpy(in, v, 8);
+    out[0] = in[7];
+    out[1] = in[6];
+    out[2] = in[5];
+    out[3] = in[4];
+    out[4] = in[3];
+    out[5] = in[2];
+    out[6] = in[1];
+    out[7] = in[0];
+    std::memcpy(v, out, 8);
+}
+
+void importGeoidToWGS84Data(){
+	std::ifstream geoidToWGS84File(filePathGeoidToWGS84, std::ios::in | std::ios::binary);	
+	size_t bytes = geoidToWGS84Data.size() * sizeof(geoidToWGS84Data[0]);
+	geoidToWGS84File.read(reinterpret_cast<char*>(geoidToWGS84Data.data()), bytes);
+}
+
+void importBedElevationData(){
+	std::ifstream bedElevFile(filePathBedElev, std::ios::in | std::ios::binary);
+	size_t bytes = bedElevationData.size() * sizeof(bedElevationData[0]);
+	bedElevFile.read(reinterpret_cast<char*>(bedElevationData.data()), bytes);
+}
+
+void importIceElevationData(){
+	std::ifstream iceElevFile(filePathIceElev, std::ios::in | std::ios::binary);
+	size_t bytes = iceElevationData.size() * sizeof(iceElevationData[0]);
+	iceElevFile.read(reinterpret_cast<char*>(iceElevationData.data()), bytes);
+}
+
 void importElevationData(){
-	geoidToWGS84Data.reserve(6667*6667);
-	bedElevationData.reserve(6667*6667);
-	iceElevationData.reserve(6667*6667);
 	std::cout << "Importing elevation data..." << std::endl;
-	std::ifstream geoidToWGS84File(filePathGeoidToWGS84);
-	std::ifstream bedElevFile(filePathBedElev);
-	std::ifstream iceElevFile(filePathIceElev);
+	
+	importGeoidToWGS84Data();
+	importBedElevationData();
+	importIceElevationData();
 
-	// Read file into memory
-	auto ss = std::stringstream{};
-	ss << geoidToWGS84File.rdbuf();
-	std::string valueString;
-	while(ss >> valueString){
-		geoidToWGS84Data.push_back(stod(valueString));
-	}
+	// std::thread t1(importGeoidToWGS84Data);
+	// std::thread t2(importBedElevationData);
+	// std::thread t3(importIceElevationData);
 
-	ss = std::stringstream{};
-	ss << bedElevFile.rdbuf();
-	while(ss >> valueString){
-		bedElevationData.push_back(stod(valueString));
-	}
+	// t1.join();
+	// t2.join();
+	// t3.join();
+	
+	std::cout << geoidToWGS84Data.size() << std::endl;
+	std::cout << bedElevationData.size() << std::endl;
+	std::cout << iceElevationData.size() << std::endl;
 
-	ss = std::stringstream{};
-	ss << iceElevFile.rdbuf();
-	while(ss >> valueString){
-		iceElevationData.push_back(stod(valueString));
-	}
+
+
 
 	for(unsigned long long i = 0; i < geoidToWGS84Data.size(); i++){
+		swap8(&geoidToWGS84Data[i]);
+		swap8(&bedElevationData[i]);
+		swap8(&iceElevationData[i]);
+		std::cout << geoidToWGS84Data[i] << std::endl;
 		if(geoidToWGS84Data[i] != -9999.){
 			bedElevationData[i] += geoidToWGS84Data[i];
 			iceElevationData[i] += geoidToWGS84Data[i];
 		}
 	}
-
-	std::cout << iceElevationData[6667*(6667/2)+(6667/2)] << std::endl;
+	std::cout << bedElevationData[6667*6667/2+6667/2] << std::endl;
 	std::cout << "Done importing elevation data." << std::endl;
 }
 
 void normalizeVector(std::vector<double> v){
 	double magsqr = 0;
-	for(int i = 0; i < v.size(); i++){
+	for(unsigned int i = 0; i < v.size(); i++){
 		magsqr += v[i] * v[i];
 	}
 	if(magsqr == 0){
 		return;
 	}
 	magsqr = sqrt(magsqr);
-	for(int i = 0; i < v.size(); i++){
+	for(unsigned int i = 0; i < v.size(); i++){
 		v[i] /= magsqr;
 	}
 }
@@ -174,7 +205,7 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 	std::vector<double> intersectionsOutgoing;
 	// Test for PREM density shell intersection from surface inwards to core
 	// Loop will break out as soon as no intersection is found, meaning current and deeper shells aren't traversed.
-	for(int i = 0; i < DENSITY_PROFILE_RADII.size(); i++){
+	for(unsigned int i = 0; i < DENSITY_PROFILE_RADII.size(); i++){
 		std::vector<double> solutions = solveQuadratic(a, b, c - (DENSITY_PROFILE_RADII[i] * DENSITY_PROFILE_RADII[i]));
 		if(solutions.size() == 0){ // No real solutions found, indicating shell isn't traversed
 			break;
@@ -231,7 +262,7 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	double densityTraversed = 0.0;
 	
 	if(intersections[0].size() > 0){
-	for(int i = 0; i < intersections[0].size() - 1; i++){ // Last shell must be integrated between last outbound and inbound
+	for(unsigned int i = 0; i < intersections[0].size() - 1; i++){ // Last shell must be integrated between last outbound and inbound
 //		std::cout << intersections[0].size() << std::endl;
 		// Integrate both parts of each shell traversal
 		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
@@ -340,24 +371,24 @@ int main(int argc, char **argv)
 {
 	importElevationData();
 	printConstants();
-	if(argc < 3){
-		printUsage();
-	}
-	else{
-		const int Nevt = atoi(argv[1]);;
-		bool ESS = false;
+	// if(argc < 3){
+	// 	printUsage();
+	// }
+	// else{
+	// 	const int Nevt = atoi(argv[1]);;
+	// 	bool ESS = false;
 		
-		std::string argv2 = argv[2];	// Create a string from command line argument to easily compare against text 
-		if(argv2 == "ESS"){
-			ESS = true;
-			std::cout << "ESS specified." << std::endl;
-			std::cout << std::endl;
-		}
-		double Enu = atof(argv[3]);
-		double maxdepth = atof(argv[4]);
-		double crossSectionFactor = atof(argv[5]);
+	// 	std::string argv2 = argv[2];	// Create a string from command line argument to easily compare against text 
+	// 	if(argv2 == "ESS"){
+	// 		ESS = true;
+	// 		std::cout << "ESS specified." << std::endl;
+	// 		std::cout << std::endl;
+	// 	}
+	// 	double Enu = atof(argv[3]);
+	// 	double maxdepth = atof(argv[4]);
+	// 	double crossSectionFactor = atof(argv[5]);
 		
-	}
+	// }
 	
 	testDensityTraversal();
 	std::cout << "Done..." << std::endl;

@@ -27,9 +27,10 @@
 *.out
 *.app
 
-# Executable and Data Files (Antarctic ASCII data are too large)
+# Executable and Data Files (Antarctic data are too large)
 *.dat
 *.flt
+*.hdr
 anita_earthmodel_2017
 bedmap2_bed.txt
 bedmap2_surface.txt
