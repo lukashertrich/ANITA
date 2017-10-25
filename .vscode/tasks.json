@@ -12,8 +12,9 @@
                 "-Wall",
                 "-std=c++11",
                 "-pthread",
-                "-ggdb",
-                "-g3",
+                "-march=native",
+                // "-ggdb",
+                // "-g3",
                 "anita_earthmodel_2017.cpp",
                 "-o anita_earthmodel_2017"
             ],

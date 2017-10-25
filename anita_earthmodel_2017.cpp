@@ -12,8 +12,6 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <complex>
-#include <cmath>
 #include <algorithm>
 #include <iterator>
 
@@ -22,9 +20,9 @@
  */
 
 // Data filepaths
-const std::string filePathBedElev = "bedmap2_bed.flt";
-const std::string filePathIceElev = "bedmap2_surface.flt";
-const std::string filePathGeoidToWGS84 = "gl04c_geiod_to_wgs84.flt"; // Note that BEDMAP 2 provides 'geiod' spelling.
+const std::string filePathBed = "bedmap2_bed.flt";
+const std::string filePathIce = "bedmap2_surface.flt";
+const std::string filePathGeoid = "gl04c_geiod_to_wgs84.flt"; // Note that BEDMAP 2 provides incorrect 'geiod' spelling.
 
 // Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
 // Antarctic data will be mapped on top of crust extruded through sea level
@@ -78,30 +76,11 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
 	std::vector<double>{13088.5, -8838.1}										// Inner Core
 	};
 
-// Whitelist of numerical characters for data parsing	
-const std::vector<char> NUMERICAL_CHARS{
-	'-',
-	'.',
-	'0',
-	'1',
-	'2',
-	'3',
-	'4',
-	'5',
-	'6',
-	'7',
-	'8',
-	'9'
-};
-
 /*
  *		GLOBAL VARIABLES
  */
 
-// Serial packing of rows
-std::vector<double> geoidToWGS84Data;
-std::vector<double> bedElevationData; 
-std::vector<double> iceElevationData;
+// Serial packing of rows, initialize with zeros to be overwritten by direct file read
 std::vector<float> geoidData(6667*6667);
 std::vector<float> bedData(6667*6667);
 std::vector<float> iceData(6667*6667);
@@ -110,114 +89,30 @@ std::vector<float> iceData(6667*6667);
  * 		FUNCTIONS
  */
 
-void parseStringToVectorDouble(std::string &dataString, std::vector<double> &dataVector){
-	std::string number;	
-	for(unsigned long long i = 0; i < dataString.length(); i++){
-		switch (dataString[i]){
-			case '-':
-			case '.':
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-			number += dataString[i];
-			break;
-			default:
-			if(number.size()){
-				// std::cout << stod(number) << std::endl;
-				dataVector.push_back(stod(number));
-				// std::cout << dataVector.size() << std::endl;
-				number.clear();				
-			}
-			break;
-		}		
-	}	
-}
-
-void importDataFile(std::ifstream file, std::vector<double> &dataVector){
-	// bufferStream << file.rdbuf();
-	// bufferString = bufferStream.str();
-	// parseStringToVectorDouble(bufferString, dataVector);
-	// bufferStream.clear();
-	// bufferString.clear();
-	std::string line;
-	while(std::getline(file, line)){
-		switch (line[0]){
-			case '-':
-			case '.':
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				parseStringToVectorDouble(line, dataVector);				
-				break;
-			default:
-				break;
-		}
-	}
-	std::cout << dataVector.size() << std::endl;
+void print(std::string message){
+	std::cout << message << std::endl;
 }
 
 void loadData(){
-	std::cout << "Loading Antarctic bedrock and ice surface elevations into memory..." << std::endl;
-	std::ifstream dataFile(filePathGeoidToWGS84, std::ios::binary);
+	print("Loading Antarctic bedrock and ice surface elevations into memory...");
+	std::ifstream dataFile(filePathGeoid, std::ios::binary);
 	dataFile.read(reinterpret_cast<char*>(geoidData.data()), geoidData.size()*sizeof(float));	
 	dataFile.close();
-	dataFile.open(filePathBedElev);
+	dataFile.open(filePathBed);
 	dataFile.read(reinterpret_cast<char*>(bedData.data()), bedData.size()*sizeof(float));
 	dataFile.close();
-	dataFile.open(filePathIceElev);
+	dataFile.open(filePathIce);
 	dataFile.read(reinterpret_cast<char*>(iceData.data()), iceData.size()*sizeof(float));
 
 	// Add geoid data to bed and ice to convert to WGS84 reference
 	for(unsigned long long i = 0; i < geoidData.size(); i++){
-		bedData[i] += geoidData[i];
-		iceData[i] += geoidData[i];
-	}
-
-	std::cout << "Loading complete." << std::endl;
-}
-
-void importElevationData(){
-	
-	geoidToWGS84Data.reserve(6667*6667);
-	bedElevationData.reserve(6667*6667);
-	iceElevationData.reserve(6667*6667);
-	
-	std::cout << "Importing elevation data..." << std::endl;
-	std::thread t1(importDataFile, std::ifstream(filePathGeoidToWGS84), std::ref(geoidToWGS84Data));	
-	std::thread t2(importDataFile, std::ifstream(filePathBedElev), std::ref(bedElevationData));	
-	std::thread t3(importDataFile, std::ifstream(filePathIceElev), std::ref(iceElevationData));	
-	t1.join();
-	t2.join();
-	t3.join();
-
-	std::cout << geoidToWGS84Data.size() << std::endl;
-	std::cout << bedElevationData.size() << std::endl;
-	std::cout << iceElevationData.size() << std::endl;
-
-
-	for(unsigned long long i = 0; i < geoidToWGS84Data.size(); i++){		
-		// std::cout << geoidToWGS84Data[i] << std::endl;
-		if(geoidToWGS84Data[i] != -9999.){
-			bedElevationData[i] += geoidToWGS84Data[i];
-			iceElevationData[i] += geoidToWGS84Data[i];
+		if(geoidData[i] != -9999.){
+			bedData[i] += geoidData[i];
+			iceData[i] += geoidData[i];
 		}
 	}
-	std::cout << bedElevationData[6667*6667/2+6667/2] << std::endl;
-	std::cout << "Done importing elevation data." << std::endl;
+
+	print("Loading complete.");
 }
 
 void normalizeVector(std::vector<double> v){
@@ -243,7 +138,6 @@ double getFirnDensity(double depth){
 std::vector<double> solveQuadratic(double a, double b, double c){
 	std::vector<double> solutions;
 	double discriminant = b * b - 4 * a * c;
-//	std::cout << "Discriminant: " << discriminant << std::endl;
 	if(discriminant < 0){ // No real solutions found
 		return solutions; // Empty vector, size() == 0
 	}
@@ -256,8 +150,6 @@ std::vector<double> solveQuadratic(double a, double b, double c){
 		solutions.push_back((-b-discriminant) / (2.0*a));
 		solutions.push_back((2.0*c) / (-b - discriminant));
 	}
-	
-//	std::cout << "Solutions: " <<   solutions[0] << ", "<< solutions[1] << std::endl;
 	return solutions;
 }
 
@@ -277,14 +169,13 @@ std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 			// outer surface will include density behind the point (ray in other direction) as well.
 			intersectionsIngoing.push_back(std::max(solutions[0],0.));
 			intersectionsOutgoing.push_back(std::max(solutions[1],0.));
-//			std::cout << "Intersections at: " << solutions[0] << ", " << solutions[1] << std::endl;
 		}
 	}	
 	return std::vector<std::vector<double>>{intersectionsIngoing, intersectionsOutgoing};
 }
 
 // t is the traversal distance given by intersection; a, b, c are aggregate coefficients of the ray traversal
-// The compiler will likely optimize recurring terms, so, for clarity, code is a direct implementation of indefinite integral
+// The compiler will likely optimize recurring terms, so, for clarity, code is a direct implementation of integral
 // provided by output from Wolfram Alpha
 double computeLinearDensityTraversal(double a, double b, double c, double t){
 	return ((2.0 * a * t + b) * sqrt(t * (a * t + b) + c)) / (4.0 * a) - (((b*b - 4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c) + 2.0*a*t+b)) / (8.0 * sqrt(a*a*a)));
@@ -316,15 +207,12 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	double b = 2.0 * ((x*dirX + y*dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (z*dirZ) / POLAR_EARTH_RADIUS_SQR);
 	double c =  (x*x + y*y) / EQUATORIAL_EARTH_RADIUS_SQR + (z*z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
 	
-//	std::cout << "Ray coefficients: " << a << " x^2, " << b << " x, " << c << std::endl;
-	
 	auto intersections = getIntersections(a,b,c);
 	
 	double densityTraversed = 0.0;
 	
 	if(intersections[0].size() > 0){
 	for(unsigned int i = 0; i < intersections[0].size() - 1; i++){ // Last shell must be integrated between last outbound and inbound
-//		std::cout << intersections[0].size() << std::endl;
 		// Integrate both parts of each shell traversal
 		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
 			case 4: // Cubic term and all less
@@ -349,7 +237,6 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 			default: // Shouldn't occur
 			break;
 		}
-//		std::cout << "Density traversed: " << densityTraversed << std::endl;
 	}	
 		int i = intersections[0].size() - 1;
 		switch (DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS[i].size()){
@@ -371,7 +258,6 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 			default: // Shouldn't occur
 			break;
 		}
-//		std::cout << "Density traversed: " << densityTraversed << std::endl;
 	}
 	
 	return densityTraversed;
@@ -405,8 +291,6 @@ void testDensityTraversal(){
 	outFile.open(outfilePath);
 	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS - 1000}; // geometric south pole 
 	auto direction = std::vector<double>{0,0,1.00}; // +Z direction
-//	double densityTraversed = getDensityTraversed(position, direction);
-//	std::cout << "Density traversed: " << densityTraversed << " kg m / m^3" << std::endl;
 	unsigned int n = 100;
 	double phi;
 	double theta;
@@ -430,8 +314,7 @@ void testDensityTraversal(){
 
 int main(int argc, char **argv)
 {
-	loadData();
-	// importElevationData();
+	loadData();	
 	printConstants();
 	// if(argc < 3){
 	// 	printUsage();
@@ -453,8 +336,8 @@ int main(int argc, char **argv)
 	// }
 	
 	testDensityTraversal();
-	std::cout << "Done..." << std::endl;
-	std::cout << "Press any key to terminate." << std::endl;
+	print("Done...");
+	print("Press any key to close.");
 	std::cin.get(); // Wait for user input to terminate
 	return 0;
 }
