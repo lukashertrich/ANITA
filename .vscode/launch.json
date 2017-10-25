@@ -2,6 +2,25 @@
         "version": "0.2.0",
         "configurations": [            
             {
+                "name": "(gdb) Launch LINUX",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/anita_earthmodel_2017",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}",
+                "environment": [],
+                "externalConsole": false,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            },
+            {
                 "name": "(gdb) Launch WINDOWS",
                 "type": "cppdbg",
                 "request": "launch",
