@@ -11,7 +11,7 @@
             "args": [
                 "-Wall",
                 "-std=c++11",
-                "-pthread",
+                // "-pthread",
                 "-march=native",
                 // "-ggdb",
                 // "-g3",

@@ -93,6 +93,22 @@ void print(std::string message){
 	std::cout << message << std::endl;
 }
 
+// For Windows machines float endianness is reversed
+float reverseFloat( const float inFloat )
+{
+   float retVal;
+   char *floatToConvert = ( char* ) &inFloat;
+   char *returnFloat = ( char* ) &retVal;
+
+   // swap the bytes into a temporary buffer
+   returnFloat[0] = floatToConvert[3];
+   returnFloat[1] = floatToConvert[2];
+   returnFloat[2] = floatToConvert[1];
+   returnFloat[3] = floatToConvert[0];
+
+   return retVal;
+}
+
 void loadData(){
 	print("Loading Antarctic bedrock and ice surface elevations into memory...");
 	std::ifstream dataFile(filePathGeoid, std::ios::binary);
@@ -106,10 +122,16 @@ void loadData(){
 
 	// Add geoid data to bed and ice to convert to WGS84 reference
 	for(unsigned long long i = 0; i < geoidData.size(); i++){
+		// #ifdef _WIN32
+		// geoidData[i] = reverseFloat(geoidData[i]);
+		// bedData[i] = reverseFloat(bedData[i]);
+		// geoidData[i] = reverseFloat(bedData[i]);
+		// #endif
 		if(geoidData[i] != -9999.){
 			bedData[i] += geoidData[i];
 			iceData[i] += geoidData[i];
 		}
+		std::cout << geoidData[i] << std::endl;
 	}
 
 	print("Loading complete.");
