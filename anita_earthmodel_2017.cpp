@@ -21,7 +21,8 @@
 
 // Data filepaths
 const std::string filePathBed = "bedmap2_bed.flt";
-const std::string filePathIce = "bedmap2_surface.flt";
+const std::string filePathSurface = "bedmap2_surface.flt";
+const std::string filePathIceThickness = "bedmap2_thickness.flt";
 const std::string filePathGeoid = "gl04c_geiod_to_wgs84.flt"; // Note that BEDMAP 2 provides incorrect 'geiod' spelling.
 
 // Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
@@ -83,7 +84,8 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
 // Serial packing of rows, initialize with zeros to be overwritten by direct file read
 std::vector<float> geoidData(6667*6667);
 std::vector<float> bedData(6667*6667);
-std::vector<float> iceData(6667*6667);
+std::vector<float> surfaceData(6667*6667);
+std::vector<float> iceThicknessData(6667*6667);
 
 /*
  * 		FUNCTIONS
@@ -117,21 +119,24 @@ void loadData(){
 	dataFile.open(filePathBed);
 	dataFile.read(reinterpret_cast<char*>(bedData.data()), bedData.size()*sizeof(float));
 	dataFile.close();
-	dataFile.open(filePathIce);
-	dataFile.read(reinterpret_cast<char*>(iceData.data()), iceData.size()*sizeof(float));
+	dataFile.open(filePathSurface);
+	dataFile.read(reinterpret_cast<char*>(surfaceData.data()), surfaceData.size()*sizeof(float));
+	dataFile.close();
+	dataFile.open(filePathIceThickness);
+	dataFile.read(reinterpret_cast<char*>(iceThicknessData.data()), iceThicknessData.size()*sizeof(float));
+	dataFile.close();
 
 	// Add geoid data to bed and ice to convert to WGS84 reference
 	for(unsigned long long i = 0; i < geoidData.size(); i++){
 		// #ifdef _WIN32
 		// geoidData[i] = reverseFloat(geoidData[i]);
 		// bedData[i] = reverseFloat(bedData[i]);
-		// geoidData[i] = reverseFloat(bedData[i]);
+		// surfaceData[i] = reverseFloat(surfaceData[i]);
 		// #endif
 		if(geoidData[i] != -9999.){
 			bedData[i] += geoidData[i];
-			iceData[i] += geoidData[i];
-		}
-		std::cout << geoidData[i] << std::endl;
+			surfaceData[i] += geoidData[i];
+		}		
 	}
 
 	print("Loading complete.");
@@ -330,6 +335,20 @@ void testDensityTraversal(){
 	outFile.close();
 }
 
+void testData(){
+	int n = 6667;
+	int d = 66;
+	std::ofstream outFile;
+	outFile.open("map.dat");
+	for(int y = 0; y < n; y += d){
+		for(int x = 0; x < n; x += d){
+			outFile << x * 1000 << "	" << y * 1000 << "	" << ((iceThicknessData[x + n*y] == -9999.0f) ? 0 : iceThicknessData[x + n*y]) << std::endl;
+		}
+		outFile << std::endl;
+	}
+	outFile.close();
+}
+
 /*
  * 		MAIN PROGRAM
  */
@@ -356,7 +375,7 @@ int main(int argc, char **argv)
 	// 	double crossSectionFactor = atof(argv[5]);
 		
 	// }
-	
+	testData();
 	testDensityTraversal();
 	print("Done...");
 	print("Press any key to close.");
