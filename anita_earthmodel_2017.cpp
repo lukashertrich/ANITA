@@ -95,7 +95,19 @@ void print(std::string message){
 	std::cout << message << std::endl;
 }
 
-// For Windows machines float endianness is reversed
+std::vector<double> getDataCoordinates(const double x, const double y){
+	return std::vector<double>(x+3333500,y+3333500);
+}
+
+// Provide error checking on inputs. No negative values should exist.
+std::vector<double> getCellValues(const double x, const double y){
+	unsigned int xFloor = (uint16_t)floor(x/1000);
+	unsigned int yfloor = (uint16_t)floor(y/1000);
+	std::vector<double> cellValues;
+	return cellValues;
+}
+
+// For some machines endianness is reversed
 float reverseFloat( const float inFloat )
 {
    float retVal;
@@ -128,11 +140,12 @@ void loadData(){
 
 	// Add geoid data to bed and ice to convert to WGS84 reference
 	for(unsigned long long i = 0; i < geoidData.size(); i++){
-		// #ifdef _WIN32
-		// geoidData[i] = reverseFloat(geoidData[i]);
-		// bedData[i] = reverseFloat(bedData[i]);
-		// surfaceData[i] = reverseFloat(surfaceData[i]);
-		// #endif
+		#ifdef _MSBF // Most significant bit first
+		geoidData[i] = reverseFloat(geoidData[i]);
+		bedData[i] = reverseFloat(bedData[i]);
+		surfaceData[i] = reverseFloat(surfaceData[i]);
+		iceThicknessData[i] = reverseFloat(iceThicknessData[i]);
+		#endif
 		if(geoidData[i] != -9999.){
 			bedData[i] += geoidData[i];
 			surfaceData[i] += geoidData[i];
