@@ -65,16 +65,16 @@ const std::vector<double> DENSITY_PROFILE_RADII{
 
 // x^0, x^1, x^2, x^3, etc. from PREM
 const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	// Given in kg / m^3
-	std::vector<double>{1020.0},															// Ocean
-	std::vector<double>{2600.0},															// Crust
-	std::vector<double>{2900.0},															// Crust
-	std::vector<double>{2691.0, 692.4},												// LVZ/LID
-	std::vector<double>{7108.9, -3804.5},											// Transition Zone
-	std::vector<double>{11249.4, -8029.8},										// Transition Zone
-	std::vector<double>{5319.7, -1483.6},											// Transition Zone
-	std::vector<double>{7956.5, -6476.1, 5528.3, -3080.7}, 	// Lower Mantle
+	std::vector<double>{1020.0},								// Ocean
+	std::vector<double>{2600.0},								// Crust
+	std::vector<double>{2900.0},								// Crust
+	std::vector<double>{2691.0, 692.4},							// LVZ/LID
+	std::vector<double>{7108.9, -3804.5},						// Transition Zone
+	std::vector<double>{11249.4, -8029.8},						// Transition Zone
+	std::vector<double>{5319.7, -1483.6},						// Transition Zone
+	std::vector<double>{7956.5, -6476.1, 5528.3, -3080.7}, 		// Lower Mantle
 	std::vector<double>{12581.5, -1263.8, -3642.6, -5528.1},	// Outer Core
-	std::vector<double>{13088.5, -8838.1}										// Inner Core
+	std::vector<double>{13088.5, -8838.1}						// Inner Core
 	};
 	
 const int DATA_ROWS = 6667;
@@ -83,6 +83,9 @@ const int DATA_INTERVAL = 1000; // meters
 const int PROJECTION_PLANE_LAT = 71; // degrees
 
 const double Z_PLANE = sin(PROJECTION_PLANE_LAT*(M_PI/180.)) * POLAR_EARTH_RADIUS_SQR;
+
+const double EPSILON = 0.001; // 1mm for numerical gradient
+const double RAYSTEP = 500.0; // meters
 
 /*
  *		GLOBAL VARIABLES
@@ -163,9 +166,9 @@ std::vector<double> getNormalizedUVCoordinates(const double xData, const double 
 	return normalizedUVs;
 }
 
-std::vector<double> getCellValues(const double xData, const double yData, const std::vector<double> &dataVector){	
-	int xFloor = (uint16_t)std::min(std::max(floor(xData/DATA_INTERVAL), 0.), DATA_COLUMNS - 1.);
-	int yFloor = (uint16_t)std::min(std::max(floor(yData/DATA_INTERVAL), 0.), DATA_ROWS - 1.);
+std::vector<double> getCellValues(const double xDataCoord, const double yDataCoord, const std::vector<double> &dataVector){	
+	int xFloor = (uint16_t)std::min(std::max(floor(xDataCoord/DATA_INTERVAL), 0.), DATA_COLUMNS - 1.);
+	int yFloor = (uint16_t)std::min(std::max(floor(yDataCoord/DATA_INTERVAL), 0.), DATA_ROWS - 1.);
 	std::vector<double> cellValues{
 		dataVector[yFloor*(DATA_COLUMNS - 1) + xFloor],
 		dataVector[yFloor*(DATA_COLUMNS - 1) + std::min(xFloor + 1, DATA_COLUMNS - 1)],
@@ -219,6 +222,12 @@ void loadData(){
 	print("Loading complete.");
 }
 
+
+
+/*
+ *		PREM DENSITY TRAVERSAL
+ */
+
 void normalizeVector(std::vector<double> &v){
 	double magsqr = 0;
 	for(unsigned int i = 0; i < v.size(); i++){
@@ -237,12 +246,16 @@ double getRadiusSqr(const double x, const double y, const double z){
 	return x*x + y*y + z*z;
 }
 
+double getRadius(const double x, const double y, const double z){
+	return sqrt(getRadiusSqr(x,y,z));
+}
+
 double getEllipsoidalRadius(const double x, const double y, const double z){	
 	return sqrt((EQUATORIAL_EARTH_RADIUS_SQR*(x*x + y*y))/(x*x + y*y + z*z) + (POLAR_EARTH_RADIUS_SQR*z*z)/(x*x + y*y + z*z));
 }
 
-double getDistanceToSurface(const double x, const double y, const double z, &dataVector){
-	return getDataValue(x, y, z, dataVector) - getEllipsoidalRadius(x, y, z);
+double getDistanceToSurface(const double x, const double y, const double z, std::vector<double> &dataVector){
+	return getDataValue(x, y, z, dataVector) + getEllipsoidalRadius(x, y, z) - getRadius(x, y, z);
 }
 
 double getFirnDensity(double depth){
@@ -377,6 +390,33 @@ double getDensityTraversed(std::vector<double> position, std::vector<double> dir
 	}
 	
 	return densityTraversed;
+}
+
+/*
+*		QUADRATIC RAYSTEPPING
+*/
+
+double getGradientAlongRayAtPoint(const double x, const double y, const double z,
+	const double xDir, const double yDir, const double zDir, std::vector<double> &dataVector){
+		return (getDistanceToSurface(x+EPSILON*xDir, y+EPSILON*yDir, z+EPSILON*zDir, dataVector)
+		- getDistanceToSurface(x-EPSILON*xDir, y-EPSILON*yDir, z-EPSILON*zDir, dataVector))
+		/ (2 * EPSILON);
+}
+
+std::vector<double> getCoefficientsOfQuadraticRaystep(const double x, const double y, const double z,
+	const double xDir, const double yDir, const double zDir, const double previousGradientAlongRay,
+	const double previousDistanceToSurface, const double tau0, std::vector<double> &dataVector){
+		std::vector<double> coefficients(3);
+		double tau1 = tau0 + RAYSTEP;
+		double nextX = x + RAYSTEP*xDir;
+		double nextY = y + RAYSTEP*yDir;
+		double nextZ = z + RAYSTEP*zDir;
+		double nextGradientAlongRay = getGradientAlongRayAtPoint(nextX, nextY, nextZ, xDir, yDir, zDir, dataVector);
+		coefficients[0] = (nextGradientAlongRay - previousGradientAlongRay) / (2 * RAYSTEP);
+		double nextDistanceToSurface = getDistanceToSurface(nextX, nextY, nextZ, dataVector);
+		coefficients[1] = (nextDistanceToSurface - previousDistanceToSurface - coefficients[0] * (tau1*tau1 - tau0*tau0)) / RAYSTEP;
+		coefficients[2] = previousDistanceToSurface - coefficients[1] * tau0 - coefficients[0] * tau0 * tau0;
+		return coefficients;
 }
 
 /*
