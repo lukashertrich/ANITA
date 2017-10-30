@@ -76,35 +76,34 @@ const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	
 	std::vector<double>{12581.5, -1263.8, -3642.6, -5528.1},	// Outer Core
 	std::vector<double>{13088.5, -8838.1}										// Inner Core
 	};
+	
+const int DATA_ROWS = 6667;
+const int DATA_COLUMNS = DATA_ROWS;
+const int DATA_INTERVAL = 1000; // meters
+const int PROJECTION_PLANE_LAT = 71; // degrees
+
+const double Z_PLANE = sin(PROJECTION_PLANE_LAT*(M_PI/180.)) * POLAR_EARTH_RADIUS_SQR;
 
 /*
  *		GLOBAL VARIABLES
  */
 
 // Serial packing of rows, initialize with zeros to be overwritten by direct file read
-std::vector<float> geoidData(6667*6667);
-std::vector<float> bedData(6667*6667);
-std::vector<float> surfaceData(6667*6667);
-std::vector<float> iceThicknessData(6667*6667);
+std::vector<float> geoidData(DATA_ROWS * DATA_COLUMNS);
+std::vector<float> bedData(DATA_ROWS * DATA_COLUMNS);
+std::vector<float> surfaceData(DATA_ROWS * DATA_COLUMNS);
+std::vector<float> iceThicknessData(DATA_ROWS * DATA_COLUMNS);
 
 /*
- * 		FUNCTIONS
+ * 		================= FUNCTIONS =========================
+ */
+
+/*
+ *		Misc.
  */
 
 void print(std::string message){
 	std::cout << message << std::endl;
-}
-
-std::vector<double> getDataCoordinates(const double x, const double y){
-	return std::vector<double>(x+3333500,y+3333500);
-}
-
-// Provide error checking on inputs. No negative values should exist.
-std::vector<double> getCellValues(const double x, const double y){
-	unsigned int xFloor = (uint16_t)floor(x/1000);
-	unsigned int yfloor = (uint16_t)floor(y/1000);
-	std::vector<double> cellValues;
-	return cellValues;
 }
 
 // For some machines endianness is reversed
@@ -121,6 +120,71 @@ float reverseFloat( const float inFloat )
    returnFloat[3] = floatToConvert[0];
 
    return retVal;
+}
+
+/*
+ *		DATA POLLING
+ */
+
+std::vector<double> getPositionOfTau(const double x0, const double y0, const double z0,
+	const double xDir, const double yDir, const double zDir, const double tau){
+	std::vector<double> position{
+		x0 + tau * xDir,
+		y0 + tau * yDir,
+		z0 + tau * zDir
+	};
+	return position;
+}
+
+std::vector<double> getProjectionCoordinates(const double x, const double y, const double z){
+	double alpha = (-POLAR_EARTH_RADIUS - Z_PLANE)/(-POLAR_EARTH_RADIUS + z);
+	std::vector<double> projCoords{
+		alpha * x,
+		alpha * y
+	};
+	return projCoords;
+}
+
+std::vector<double> getDataCoordinates(const double xProj, const double yProj){
+	std::vector<double> dataCoordinates{
+		xProj+(DATA_COLUMNS*DATA_INTERVAL/2),
+		yProj+(DATA_ROWS*DATA_INTERVAL/2)
+	};
+	return dataCoordinates;
+}
+
+std::vector<double> getNormalizedUVCoordinates(const double xData, const double yData){
+	double xFrac, yFrac;
+	modf(xData/DATA_INTERVAL, &xFrac);
+	modf(yData/DATA_INTERVAL, &yFrac);
+	std::vector<double> normalizedUVs{
+		xFrac, yFrac
+	};
+	return normalizedUVs;
+}
+
+std::vector<double> getCellValues(const double xData, const double yData, const std::vector<double> &dataVector){	
+	int xFloor = (uint16_t)std::min(std::max(floor(xData/DATA_INTERVAL), 0.), DATA_COLUMNS - 1.);
+	int yFloor = (uint16_t)std::min(std::max(floor(yData/DATA_INTERVAL), 0.), DATA_ROWS - 1.);
+	std::vector<double> cellValues{
+		dataVector[yFloor*(DATA_COLUMNS - 1) + xFloor],
+		dataVector[yFloor*(DATA_COLUMNS - 1) + std::min(xFloor + 1, DATA_COLUMNS - 1)],
+		dataVector[std::min(yFloor + 1, DATA_ROWS - 1)*(DATA_COLUMNS - 1) + xFloor],
+		dataVector[std::min(yFloor + 1, DATA_ROWS - 1)*(DATA_COLUMNS - 1) + std::min(xFloor + 1, DATA_COLUMNS - 1)],
+	};
+	return cellValues;
+}
+
+double getDataValue(const double x, const double y, const double z, std::vector<double> &dataVector){	
+	std::vector<double> projCoords = getProjectionCoordinates(x, y, z);
+	std::vector<double> dataCoordinates = getDataCoordinates(projCoords[0], projCoords[1]);
+	std::vector<double> cellValues = getCellValues(dataCoordinates[0], dataCoordinates[1], dataVector);
+	std::vector<double> normalizedUVs = getNormalizedUVCoordinates(dataCoordinates[0], dataCoordinates[1]);
+	// Return bilinear interpolation of cell value based on UVs
+	return cellValues[0]
+	+ normalizedUVs[0]*(cellValues[1]-cellValues[0])
+	+ normalizedUVs[1]*(cellValues[2]-cellValues[0])
+	+ normalizedUVs[0]*normalizedUVs[1]*(cellValues[3]-cellValues[2]-cellValues[1]-cellValues[0]);
 }
 
 void loadData(){
@@ -155,7 +219,7 @@ void loadData(){
 	print("Loading complete.");
 }
 
-void normalizeVector(std::vector<double> v){
+void normalizeVector(std::vector<double> &v){
 	double magsqr = 0;
 	for(unsigned int i = 0; i < v.size(); i++){
 		magsqr += v[i] * v[i];
@@ -167,6 +231,18 @@ void normalizeVector(std::vector<double> v){
 	for(unsigned int i = 0; i < v.size(); i++){
 		v[i] /= magsqr;
 	}
+}
+
+double getRadiusSqr(const double x, const double y, const double z){
+	return x*x + y*y + z*z;
+}
+
+double getEllipsoidalRadius(const double x, const double y, const double z){	
+	return sqrt((EQUATORIAL_EARTH_RADIUS_SQR*(x*x + y*y))/(x*x + y*y + z*z) + (POLAR_EARTH_RADIUS_SQR*z*z)/(x*x + y*y + z*z));
+}
+
+double getDistanceToSurface(const double x, const double y, const double z, &dataVector){
+	return getDataValue(x, y, z, dataVector) - getEllipsoidalRadius(x, y, z);
 }
 
 double getFirnDensity(double depth){
