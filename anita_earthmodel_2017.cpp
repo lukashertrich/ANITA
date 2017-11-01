@@ -86,6 +86,8 @@ const double Z_PLANE = sin(PROJECTION_PLANE_LAT*(M_PI/180.)) * POLAR_EARTH_RADIU
 
 const double EPSILON = 0.001; // 1mm for numerical gradient
 const double RAYSTEP = 500.0; // meters
+const double UPPER_SURFACE_BOUND = 1.0 + (5000 / POLAR_EARTH_RADIUS); // Roughly higher than Mt Vinson in normalized radius
+const double LOWER_SURFACE_BOUND = 1.0 - (3000 / POLAR_EARTH_RADIUS); // Roughly lower than Bentley Subglacial Trench in normalized radius
 
 /*
  *		GLOBAL VARIABLES
@@ -321,9 +323,15 @@ double computeCubicDensityTraversal(double a, double b, double c, double t){
 	+ 3.0 * (b*b-4.0*a*c)*(b*b-4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c)+2.0*a*t+b));
 }
 
+// std::vector<double> getQuadraticCoefficientsOfNormalizedEllipsoidalRay(){
+
+// }
+
 // Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
 // in order to calculate integral of traversed density across PREM profiles applied to WGS84 ellipsoid
-double getDensityTraversed(std::vector<double> position, std::vector<double> direction){
+double getDensityTraversed(std::vector<double> &position, std::vector<double> &direction){
+	// Relabel vector parts for ease of readability
+	// Compiler will likely optimize out dummy variables
 	double x = position[0];
 	double y = position[1];
 	double z = position[2];
@@ -417,6 +425,13 @@ std::vector<double> getCoefficientsOfQuadraticRaystep(const double x, const doub
 		coefficients[1] = (nextDistanceToSurface - previousDistanceToSurface - coefficients[0] * (tau1*tau1 - tau0*tau0)) / RAYSTEP;
 		coefficients[2] = previousDistanceToSurface - coefficients[1] * tau0 - coefficients[0] * tau0 * tau0;
 		return coefficients;
+}
+
+// Returns a vector of x,y,z,tau vectors
+std::vector<std::vector<double>> intersectSurface(const double x, const double y, const double z,
+	const double xDir, const double yDir, const double tau, std::vector<double> &dataVector){	
+	// Compute taus of intersection with bounding ellipsoids
+	// Terrain radii are bounded by lower and upper radius to determine valid surface polling areas
 }
 
 /*
