@@ -14,6 +14,7 @@
 #include <fstream>
 #include <algorithm>
 #include <iterator>
+#include "vector3.h"
 
 /*
  * 		GLOBAL CONSTANTS
@@ -323,9 +324,14 @@ double computeCubicDensityTraversal(double a, double b, double c, double t){
 	+ 3.0 * (b*b-4.0*a*c)*(b*b-4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c)+2.0*a*t+b));
 }
 
-// std::vector<double> getQuadraticCoefficientsOfNormalizedEllipsoidalRay(){
-
-// }
+std::vector<double> getQuadraticCoefficientsOfNormalizedEllipsoidalRay(const double x, const double y, const double z,
+const double dirX, const double dirY, const double dirZ){
+	std::vector<double> coefficients;
+	coefficients.push_back((dirX * dirX + dirY * dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (dirZ * dirZ) / POLAR_EARTH_RADIUS_SQR);
+	coefficients.push_back(2.0 * ((x*dirX + y*dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (z*dirZ) / POLAR_EARTH_RADIUS_SQR));
+	coefficients.push_back((x*x + y*y) / EQUATORIAL_EARTH_RADIUS_SQR + (z*z) / POLAR_EARTH_RADIUS_SQR);
+	return coefficients;
+}
 
 // Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
 // in order to calculate integral of traversed density across PREM profiles applied to WGS84 ellipsoid
@@ -343,7 +349,7 @@ double getDensityTraversed(std::vector<double> &position, std::vector<double> &d
 	double a = (dirX * dirX + dirY * dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (dirZ * dirZ) / POLAR_EARTH_RADIUS_SQR;
 	double b = 2.0 * ((x*dirX + y*dirY) / EQUATORIAL_EARTH_RADIUS_SQR + (z*dirZ) / POLAR_EARTH_RADIUS_SQR);
 	double c =  (x*x + y*y) / EQUATORIAL_EARTH_RADIUS_SQR + (z*z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
-	
+		
 	auto intersections = getIntersections(a,b,c);
 	
 	double densityTraversed = 0.0;
@@ -429,9 +435,14 @@ std::vector<double> getCoefficientsOfQuadraticRaystep(const double x, const doub
 
 // Returns a vector of x,y,z,tau vectors
 std::vector<std::vector<double>> intersectSurface(const double x, const double y, const double z,
-	const double xDir, const double yDir, const double tau, std::vector<double> &dataVector){	
+	const double xDir, const double yDir, const double zDir, const double tau, std::vector<double> &dataVector){	
 	// Compute taus of intersection with bounding ellipsoids
 	// Terrain radii are bounded by lower and upper radius to determine valid surface polling areas
+	std::vector<double> quadCoeff = getQuadraticCoefficientsOfNormalizedEllipsoidalRay(x,y,z,xDir,yDir,zDir);
+	std::vector<std::vector<double>> boundIntersections;
+	boundIntersections.push_back(solveQuadratic(quadCoeff[0],quadCoeff[1],quadCoeff[2]-(LOWER_SURFACE_BOUND*LOWER_SURFACE_BOUND)));
+	boundIntersections.push_back(solveQuadratic(quadCoeff[0],quadCoeff[1],quadCoeff[2]-(UPPER_SURFACE_BOUND*UPPER_SURFACE_BOUND)));
+	
 }
 
 /*

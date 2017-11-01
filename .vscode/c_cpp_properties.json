@@ -13,7 +13,8 @@
                 "path": [
                     "/usr/include",
                     "/usr/local/include",
-                    "${workspaceRoot}"
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/src"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
@@ -32,7 +33,8 @@
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
                 "${workspaceRoot}",
-                "/usr/include/linux"
+                "/usr/include/linux",
+                "${workspaceRoot}/src"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -43,7 +45,8 @@
                     "/usr/local/include",
                     "/usr/include/x86_64-linux-gnu",
                     "/usr/include",
-                    "${workspaceRoot}"
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/src"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

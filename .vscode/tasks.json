@@ -15,8 +15,9 @@
                 "-march=native",
                 // "-ggdb",
                 // "-g3",
-                "anita_earthmodel_2017.cpp",
-                "-o anita_earthmodel_2017"
+                "src/anita_earthmodel_2017.cpp",
+                "-o",
+                "bin/anita_earthmodel_2017"
             ],
             "problemMatcher": [
                 "$gcc"
