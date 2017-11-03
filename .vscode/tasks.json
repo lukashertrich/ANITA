@@ -5,7 +5,7 @@
     "tasks": [
         {
             "group":"build",
-            "taskName": "Build g++",
+            "taskName": "Build g++ [RELEASE]",
             "type": "shell",
             "command": "g++",
             "args": [
@@ -15,9 +15,28 @@
                 "-march=native",
                 // "-ggdb",
                 // "-g3",
-                "src/anita_earthmodel_2017.cpp",
+                "src/ANITA_EarthModel.cpp",
                 "-o",
-                "bin/anita_earthmodel_2017"
+                "bin/ANITA_EarthModel"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "group":"build",
+            "taskName": "Build g++ [DEBUG]",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-Wall",
+                "-std=c++11",
+                // "-pthread",
+                "-ggdb",
+                "-g3",
+                "src/ANITA_EarthModel.cpp",
+                "-o",
+                "bin/ANITA_EarthModel"
             ],
             "problemMatcher": [
                 "$gcc"

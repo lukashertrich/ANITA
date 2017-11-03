@@ -4,7 +4,6 @@
 
 #define _USE_MATH_DEFINES
 
-#include <cstring>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -14,7 +13,11 @@
 #include <fstream>
 #include <algorithm>
 #include <iterator>
-#include "vector3.h"
+#include "Vector.h"
+#include "DataRaster.h"
+#include "Diagnostics.h"
+#include "QuadraticSolver.h"
+
 
 /*
  * 		GLOBAL CONSTANTS
@@ -433,17 +436,17 @@ std::vector<double> getCoefficientsOfQuadraticRaystep(const double x, const doub
 		return coefficients;
 }
 
-// Returns a vector of x,y,z,tau vectors
-std::vector<std::vector<double>> intersectSurface(const double x, const double y, const double z,
-	const double xDir, const double yDir, const double zDir, const double tau, std::vector<double> &dataVector){	
-	// Compute taus of intersection with bounding ellipsoids
-	// Terrain radii are bounded by lower and upper radius to determine valid surface polling areas
-	std::vector<double> quadCoeff = getQuadraticCoefficientsOfNormalizedEllipsoidalRay(x,y,z,xDir,yDir,zDir);
-	std::vector<std::vector<double>> boundIntersections;
-	boundIntersections.push_back(solveQuadratic(quadCoeff[0],quadCoeff[1],quadCoeff[2]-(LOWER_SURFACE_BOUND*LOWER_SURFACE_BOUND)));
-	boundIntersections.push_back(solveQuadratic(quadCoeff[0],quadCoeff[1],quadCoeff[2]-(UPPER_SURFACE_BOUND*UPPER_SURFACE_BOUND)));
+// // Returns a vector of x,y,z,tau vectors
+// std::vector<std::vector<double>> intersectSurface(const double x, const double y, const double z,
+// 	const double xDir, const double yDir, const double zDir, const double tau, std::vector<double> &dataVector){	
+// 	// Compute taus of intersection with bounding ellipsoids
+// 	// Terrain radii are bounded by lower and upper radius to determine valid surface polling areas
+// 	std::vector<double> quadCoeff = getQuadraticCoefficientsOfNormalizedEllipsoidalRay(x,y,z,xDir,yDir,zDir);
+// 	std::vector<std::vector<double>> boundIntersections;
+// 	boundIntersections.push_back(solveQuadratic(quadCoeff[0],quadCoeff[1],quadCoeff[2]-(LOWER_SURFACE_BOUND*LOWER_SURFACE_BOUND)));
+// 	boundIntersections.push_back(solveQuadratic(quadCoeff[0],quadCoeff[1],quadCoeff[2]-(UPPER_SURFACE_BOUND*UPPER_SURFACE_BOUND)));
 	
-}
+// }
 
 /*
  * 		DIAGNOSTIC FUNCTIONS
