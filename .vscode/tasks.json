@@ -9,6 +9,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
+                "-m64",
                 "-Wall",
                 "-std=c++11",
                 // "-pthread",
@@ -29,6 +30,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
+                "-m64",
                 "-Wall",
                 "-std=c++11",
                 // "-pthread",
@@ -37,6 +39,7 @@
                 "src/ANITA_EarthModel.cpp",
                 "-o",
                 "bin/ANITA_EarthModel"
+                
             ],
             "problemMatcher": [
                 "$gcc"

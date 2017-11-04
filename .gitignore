@@ -38,3 +38,5 @@ gl04c_geoid_to_wgs84.txt
 # Don't include the provided misspelled file either
 gl04c_geiod_to_wgs84.txt
 diagnostic.dat
+bin/ANITA_EarthModel
+diagnostic.dat
