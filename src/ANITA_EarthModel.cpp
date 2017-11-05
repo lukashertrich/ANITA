@@ -513,8 +513,8 @@ void testData(){
 
 int main(int argc, char **argv)
 {
-	loadData();	
-	printConstants();
+	// loadData();	
+	// printConstants();
 	// if(argc < 3){
 	// 	printUsage();
 	// }
@@ -533,8 +533,10 @@ int main(int argc, char **argv)
 	// 	double crossSectionFactor = atof(argv[5]);
 		
 	// }
-	testData();
-	testDensityTraversal();
+	// testData();
+	// testDensityTraversal();
+
+	anita::testDataRaster();
 	print("Done...");
 	print("Press any key to close.");
 	std::cin.get(); // Wait for user input to terminate
