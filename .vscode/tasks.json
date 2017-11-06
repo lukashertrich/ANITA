@@ -18,6 +18,7 @@
                 // "-g3",
                 "src/Diagnostics.cpp",
                 "src/QuadraticSolver.cpp",
+                "src/DataRaster.cpp",
                 "src/ANITA_EarthModel.cpp",        
                 "-o",
                 "bin/ANITA_EarthModel"
@@ -39,9 +40,10 @@
                 "-std=c++11",
                 "-pthread",
                 "-ggdb",
-                "-g3",
+                "-g",
                 "src/Diagnostics.cpp",
                 "src/QuadraticSolver.cpp",
+                "src/DataRaster.cpp",
                 "src/ANITA_EarthModel.cpp",                
                 "-o",
                 "bin/ANITA_EarthModel"        

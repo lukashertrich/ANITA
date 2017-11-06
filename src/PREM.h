@@ -1,12 +1,13 @@
 #pragma once
+#include <vector>
 namespace anita{
-    const double MEAN_EARTH_RADIUS = 6.3710e6; // meters
-    const double EQUATORIAL_EARTH_RADIUS = 6378137; // meters
-    const double EQUATORIAL_EARTH_RADIUS_SQR = EQUATORIAL_EARTH_RADIUS * EQUATORIAL_EARTH_RADIUS; // meters squared
-    const double INVERSE_FLATTENING = 298.257223563; // Used to determine polar radius
+    constexpr double MEAN_EARTH_RADIUS = 6.3710e6; // meters
+    constexpr double EQUATORIAL_EARTH_RADIUS = 6378137; // meters
+    constexpr double EQUATORIAL_EARTH_RADIUS_SQR = EQUATORIAL_EARTH_RADIUS * EQUATORIAL_EARTH_RADIUS; // meters squared
+    constexpr double INVERSE_FLATTENING = 298.257223563; // Used to determine polar radius
     // WGS84 polar radius is defined by inverse flattening term
-    const double POLAR_EARTH_RADIUS = EQUATORIAL_EARTH_RADIUS * (1.0 - (1.0 / INVERSE_FLATTENING)); // meters
-    const double POLAR_EARTH_RADIUS_SQR = POLAR_EARTH_RADIUS * POLAR_EARTH_RADIUS; // meters squared
+    constexpr double POLAR_EARTH_RADIUS = EQUATORIAL_EARTH_RADIUS * (1.0 - (1.0 / INVERSE_FLATTENING)); // meters
+    constexpr double POLAR_EARTH_RADIUS_SQR = POLAR_EARTH_RADIUS * POLAR_EARTH_RADIUS; // meters squared
     
     // Normalized radii of density profile shells listed from the surface inwards to the core.
     // Obtained from spherical PREM to be mapped to normalized WGS84 ellipsoid equation

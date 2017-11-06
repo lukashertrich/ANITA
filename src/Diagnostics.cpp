@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <string>
 #include "Diagnostics.h"
 #include "PREM.h"
 #include "DataRaster.h"
@@ -22,7 +23,7 @@ void anita::printUsage(){
 }
 
 void anita::testDataRaster(){
-    anita::DataRaster<float> testRaster("gl04c_geiod_to_wgs84.flt");
+    // anita::DataRaster testRaster(std::string("gl04c_geiod_to_wgs84.flt"));
 }
 
 // void anita::testDensityTraversal(){

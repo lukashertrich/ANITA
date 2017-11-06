@@ -86,7 +86,7 @@ const int DATA_COLUMNS = DATA_ROWS;
 const int DATA_INTERVAL = 1000; // meters
 const int PROJECTION_PLANE_LAT = 71; // degrees
 
-const double Z_PLANE = sin(PROJECTION_PLANE_LAT*(M_PI/180.)) * POLAR_EARTH_RADIUS_SQR;
+const double Z_PLANE = sin(PROJECTION_PLANE_LAT*(M_PI/180.)) * POLAR_EARTH_RADIUS;
 
 const double EPSILON = 0.001; // 1mm for numerical gradient
 const double RAYSTEP = 500.0; // meters
@@ -493,75 +493,36 @@ void testDensityTraversal(){
 	outFile.close();
 }
 
-void testData(){
-	int n = 6667;
-	int d = 66;
-	std::ofstream outFile;
-	outFile.open("map.dat");
-	for(int y = 0; y < n; y += d){
-		for(int x = 0; x < n; x += d){
-			outFile << x * 1000 << "	" << y * 1000 << "	" << ((iceThicknessData[x + n*y] == -9999.0f) ? 0 : iceThicknessData[x + n*y]) << std::endl;
-		}
-		outFile << std::endl;
-	}
-	outFile.close();
+// void testData(){
+// 	int n = 6667;
+// 	int d = 66;
+// 	std::ofstream outFile;
+// 	outFile.open("map.dat");
+// 	for(int y = 0; y < n; y += d){
+// 		for(int x = 0; x < n; x += d){
+// 			outFile << x * 1000 << "	" << y * 1000 << "	" << ((iceThicknessData[x + n*y] == -9999.0f) ? 0 : iceThicknessData[x + n*y]) << std::endl;
+// 		}
+// 		outFile << std::endl;
+// 	}
+// 	outFile.close();
+// }
+
+void setDataRaster(std::string filePath, anita::DataRaster* dataRaster){
+	dataRaster = new anita::DataRaster(filePath);
 }
 
 /*
  * 		MAIN PROGRAM
  */
 
-void setDataRaster(std::string filePath, anita::DataRaster<float>* dataRaster){
-	dataRaster = new anita::DataRaster<float>(filePath);
-}
-
 int main(int argc, char **argv)
 {
-	// loadData();	
-	// printConstants();
-	// if(argc < 3){
-	// 	printUsage();
-	// }
-	// else{
-	// 	const int Nevt = atoi(argv[1]);;
-	// 	bool ESS = false;
-		
-	// 	std::string argv2 = argv[2];	// Create a string from command line argument to easily compare against text 
-	// 	if(argv2 == "ESS"){
-	// 		ESS = true;
-	// 		std::cout << "ESS specified." << std::endl;
-	// 		std::cout << std::endl;
-	// 	}
-	// 	double Enu = atof(argv[3]);
-	// 	double maxdepth = atof(argv[4]);
-	// 	double crossSectionFactor = atof(argv[5]);
-		
-	// }
-	// testData();
-	// testDensityTraversal();
-
-	anita::DataRaster<float>* geoidDataRaster = nullptr;
-	anita::DataRaster<float>* bedDataRaster = nullptr;	
-	anita::DataRaster<float>* surfaceDataRaster = nullptr;
-	anita::DataRaster<float>* iceDataRaster = nullptr;	
-	std::thread t1(setDataRaster, filePathGeoid, geoidDataRaster);
-	std::thread t2(setDataRaster, filePathBed, bedDataRaster);
-	std::thread t3(setDataRaster, filePathSurface, surfaceDataRaster);
-	std::thread t4(setDataRaster, filePathIceThickness, iceDataRaster);
-	t1.join();
-	t2.join();
-	t3.join();
-	t4.join();
-	
-	// anita::testDataRaster();
-	delete geoidDataRaster;
-	geoidDataRaster = nullptr;
-	delete bedDataRaster;
-	bedDataRaster = nullptr;
-	delete surfaceDataRaster;
-	surfaceDataRaster = nullptr;
-	delete iceDataRaster;
-	iceDataRaster = nullptr;
+	loadData();
+	std::cout << surfaceData[0] << std::endl;
+	// anita::DataRaster* geoidDataRaster = nullptr;
+	// setDataRaster(filePathGeoid, geoidDataRaster);
+	// std::thread t1(setDataRaster, filePathGeoid, geoidDataRaster);
+	// t1.join();
 	print("Done...");
 	print("Press any key to close.");
 	std::cin.get(); // Wait for user input to terminate
