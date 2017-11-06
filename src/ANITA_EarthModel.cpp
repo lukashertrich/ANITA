@@ -511,6 +511,10 @@ void testData(){
  * 		MAIN PROGRAM
  */
 
+void setDataRaster(std::string filePath, anita::DataRaster<float>* dataRaster){
+	dataRaster = new anita::DataRaster<float>(filePath);
+}
+
 int main(int argc, char **argv)
 {
 	// loadData();	
@@ -536,7 +540,28 @@ int main(int argc, char **argv)
 	// testData();
 	// testDensityTraversal();
 
-	anita::testDataRaster();
+	anita::DataRaster<float>* geoidDataRaster = nullptr;
+	anita::DataRaster<float>* bedDataRaster = nullptr;	
+	anita::DataRaster<float>* surfaceDataRaster = nullptr;
+	anita::DataRaster<float>* iceDataRaster = nullptr;	
+	std::thread t1(setDataRaster, filePathGeoid, geoidDataRaster);
+	std::thread t2(setDataRaster, filePathBed, bedDataRaster);
+	std::thread t3(setDataRaster, filePathSurface, surfaceDataRaster);
+	std::thread t4(setDataRaster, filePathIceThickness, iceDataRaster);
+	t1.join();
+	t2.join();
+	t3.join();
+	t4.join();
+	
+	// anita::testDataRaster();
+	delete geoidDataRaster;
+	geoidDataRaster = nullptr;
+	delete bedDataRaster;
+	bedDataRaster = nullptr;
+	delete surfaceDataRaster;
+	surfaceDataRaster = nullptr;
+	delete iceDataRaster;
+	iceDataRaster = nullptr;
 	print("Done...");
 	print("Press any key to close.");
 	std::cin.get(); // Wait for user input to terminate

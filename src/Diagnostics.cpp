@@ -1,19 +1,17 @@
-#include "Diagnostics.h"
+
 #define _USE_MATH_DEFINES
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include "Diagnostics.h"
 #include "PREM.h"
 #include "DataRaster.h"
 
 void anita::printConstants(){
     std::cout << "Enumeration of physical constants used in code:" << std::endl;
-    // std::cout << "Distance to horizon:			" << anita::DISTANCE_TO_HORIZON << " meters." << std::endl;
     std::cout << "Mean Earth radius:			" << anita::MEAN_EARTH_RADIUS << " meters." << std::endl;
     std::cout << "Polar Earth radius:			" << anita::POLAR_EARTH_RADIUS << " meters."<< std::endl;
-    // std::cout << "Mean Earth density:			" << anita::MEAN_EARTH_DENSITY << " kilograms per cubic meter." << std::endl;
-    // std::cout << "Vacuum speed of light:			" << SPEED_OF_LIGHT << " meters per second." << std::endl;
     std::cout << std::endl;
 }
 
@@ -21,6 +19,10 @@ void anita::printUsage(){
     std::cout << "Usage: anita_earthmodel2 [Nevt][ spectrum='ESS' or 'Enu'][Enu(eV)][maxdepth(m)][cross section factor]"<< std::endl;
     std::cout << "If single energy 'Enu' then argv[3] is the neutrino energy, else ignored."<< std::endl;
     std::cout << std::endl;
+}
+
+void anita::testDataRaster(){
+    anita::DataRaster<float> testRaster("gl04c_geiod_to_wgs84.flt");
 }
 
 // void anita::testDensityTraversal(){
@@ -48,6 +50,4 @@ void anita::printUsage(){
 //     outFile.close();
 // }
 
-void anita::testDataRaster(){
-    anita::DataRaster<float> testRaster("gl04c_geiod_to_wgs84.flt");
-}
+
