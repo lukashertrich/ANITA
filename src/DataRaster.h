@@ -10,33 +10,10 @@
 
 namespace anita{
 
-    // class DataRaster{
-    //     static constexpr int DATA_ROWS = 6667;
-    //     static constexpr int DATA_COLUMNS = DATA_ROWS;
-    //     static constexpr int DATA_INTERVAL = 1000; // meters
-    //     static constexpr int PROJECTION_PLANE_LAT = 71; // degrees
-        
-    //     static constexpr double Z_PLANE = sin(PROJECTION_PLANE_LAT*(M_PI/180.)) * anita::POLAR_EARTH_RADIUS;
-        
-    //     static constexpr double EPSILON = 0.001; // 1mm for numerical gradient
-    //     static constexpr double RAYSTEP = 500.0; // meters
-    //     static constexpr double UPPER_SURFACE_BOUND = 1.0 + (5000 / anita::POLAR_EARTH_RADIUS); // Roughly higher than Mt Vinson in terms of normalized radius
-    //     static constexpr double LOWER_SURFACE_BOUND = 1.0 - (3000 / anita::POLAR_EARTH_RADIUS); // Roughly lower than Bentley Subglacial Trench in terms of normalized radius
-
-    //     std::vector<float>* data;
-
-    // public:
-    //     DataRaster(std::string filePath);
-    //     ~DataRaster();
-    // };
-
-    // Template code commented out due to memory allocation bug
-    // Explicit implementation above
-
     template <typename T> class DataRaster{
-    public:
         T* values = nullptr;
         unsigned int columns, rows;
+        const int dataInterval = 1000;
 
         std::streamsize getSizeOfFile(const std::string &filePath){
             std::ifstream dataFile;
@@ -62,6 +39,10 @@ namespace anita{
                 if(values){
                     delete [] values;
                 }
+            }
+
+            float getvalue(double x, double y){
+                return 0.;
             }
         };
 }

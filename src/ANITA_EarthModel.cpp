@@ -13,95 +13,19 @@
 #include <fstream>
 #include <algorithm>
 #include <iterator>
+
 #include "Vector.h"
 #include "DataRaster.h"
 #include "Diagnostics.h"
 #include "QuadraticSolver.h"
-
-
-/*
- * 		GLOBAL CONSTANTS
- */
-
-// Data filepaths
-const std::string filePathBed = "bedmap2_bed.flt";
-const std::string filePathSurface = "bedmap2_surface.flt";
-const std::string filePathIceThickness = "bedmap2_thickness.flt";
-const std::string filePathGeoid = "gl04c_geiod_to_wgs84.flt"; // Note that BEDMAP 2 provides incorrect 'geiod' spelling.
-
-// Equatorial and polar Earth radii are defined by the WGS84 ellipsoid, and are assumed to define sea level
-// Antarctic data will be mapped on top of crust extruded through sea level
-const double DISTANCE_TO_HORIZON = 6.000e5; // meters
-const double MEAN_EARTH_RADIUS = 6.3710e6; // meters
-const double EQUATORIAL_EARTH_RADIUS = 6378137; // meters
-const double EQUATORIAL_EARTH_RADIUS_SQR = EQUATORIAL_EARTH_RADIUS * EQUATORIAL_EARTH_RADIUS; // meters squared
-const double INVERSE_FLATTENING = 298.257223563; // Used to determine polar radius
-// WGS84 polar radius is defined by inverse flattening term
-const double POLAR_EARTH_RADIUS = EQUATORIAL_EARTH_RADIUS * (1.0 - (1.0 / INVERSE_FLATTENING)); // meters
-const double POLAR_EARTH_RADIUS_SQR = POLAR_EARTH_RADIUS * POLAR_EARTH_RADIUS; // meters squared
-const double MEAN_EARTH_DENSITY = 5.515e3; // kg per cubic meter
-
-const double SPEED_OF_LIGHT = 2.9979e8; // meters per second
-
-// Coefficients for a polynomial fit to European Spallation Source from 1e17 to 1e21 eV.
-const double ESS_COEFFICIENTS[6] = {
-	1.661142492611783e4,
-	-4.616049469872646e3,
-	5.104845489878782e2,
-	-2.812808939782252e1,
-	7.727397573928863e-1,
-	-8.473959043935221e-3 };
-
-// Normalized radii of density profile shells listed from the surface inwards to the core.
-// Obtained from spherical PREM to be mapped to normalized WGS84 ellipsoid equation
-const std::vector<double> DENSITY_PROFILE_RADII{
-	1.0,																				// Ocean (Exclude ocean from antarctic side of ray traversal by using constant crust density extruded  up to sea level)
-	6368000.0 / MEAN_EARTH_RADIUS,		// Crust
-	6356000.0 / MEAN_EARTH_RADIUS,		// Crust
-	6346600.0 / MEAN_EARTH_RADIUS,		// LVZ/LID
-	6151000.0 / MEAN_EARTH_RADIUS,		// Transition Zone
-	5971000.0 / MEAN_EARTH_RADIUS,		// Transition Zone
-	5771000.0 / MEAN_EARTH_RADIUS,		// Transition Zone
-	5701000.0 / MEAN_EARTH_RADIUS,		// Lower Mantle
-	3480000.0 / MEAN_EARTH_RADIUS,		// Outer Core
-	1221500.0 / MEAN_EARTH_RADIUS		// Inner Core
-} ;
-
-// x^0, x^1, x^2, x^3, etc. from PREM
-const std::vector<std::vector<double>> DENSITY_PROFILE_POLYNOMIAL_COEFFICIENTS{	// Given in kg / m^3
-	std::vector<double>{1020.0},								// Ocean
-	std::vector<double>{2600.0},								// Crust
-	std::vector<double>{2900.0},								// Crust
-	std::vector<double>{2691.0, 692.4},							// LVZ/LID
-	std::vector<double>{7108.9, -3804.5},						// Transition Zone
-	std::vector<double>{11249.4, -8029.8},						// Transition Zone
-	std::vector<double>{5319.7, -1483.6},						// Transition Zone
-	std::vector<double>{7956.5, -6476.1, 5528.3, -3080.7}, 		// Lower Mantle
-	std::vector<double>{12581.5, -1263.8, -3642.6, -5528.1},	// Outer Core
-	std::vector<double>{13088.5, -8838.1}						// Inner Core
-	};
-	
-const int DATA_ROWS = 6667;
-const int DATA_COLUMNS = DATA_ROWS;
-const int DATA_INTERVAL = 1000; // meters
-const int PROJECTION_PLANE_LAT = 71; // degrees
-
-const double Z_PLANE = sin(PROJECTION_PLANE_LAT*(M_PI/180.)) * POLAR_EARTH_RADIUS;
-
-const double EPSILON = 0.001; // 1mm for numerical gradient
-const double RAYSTEP = 500.0; // meters
-const double UPPER_SURFACE_BOUND = 1.0 + (5000 / POLAR_EARTH_RADIUS); // Roughly higher than Mt Vinson in normalized radius
-const double LOWER_SURFACE_BOUND = 1.0 - (3000 / POLAR_EARTH_RADIUS); // Roughly lower than Bentley Subglacial Trench in normalized radius
+#include "ESS.h"
+#include "Filepaths.h"
+#include "ReverseFloat.h"
+#include "Projection.h"
 
 /*
  *		GLOBAL VARIABLES
  */
-
-// Serial packing of rows, initialize with zeros to be overwritten by direct file read
-std::vector<float> geoidData(DATA_ROWS * DATA_COLUMNS);
-std::vector<float> bedData(DATA_ROWS * DATA_COLUMNS);
-std::vector<float> surfaceData(DATA_ROWS * DATA_COLUMNS);
-std::vector<float> iceThicknessData(DATA_ROWS * DATA_COLUMNS);
 
 ///
 anita::DataRaster<float> geoidDataRaster;
@@ -122,20 +46,7 @@ void print(std::string message){
 }
 
 // For some machines endianness is reversed
-float reverseFloat( const float inFloat )
-{
-   float retVal;
-   char *floatToConvert = ( char* ) &inFloat;
-   char *returnFloat = ( char* ) &retVal;
 
-   // swap the bytes into a temporary buffer
-   returnFloat[0] = floatToConvert[3];
-   returnFloat[1] = floatToConvert[2];
-   returnFloat[2] = floatToConvert[1];
-   returnFloat[3] = floatToConvert[0];
-
-   return retVal;
-}
 
 /*
  *		DATA POLLING
