@@ -103,6 +103,12 @@ std::vector<float> bedData(DATA_ROWS * DATA_COLUMNS);
 std::vector<float> surfaceData(DATA_ROWS * DATA_COLUMNS);
 std::vector<float> iceThicknessData(DATA_ROWS * DATA_COLUMNS);
 
+///
+anita::DataRaster<float> geoidDataRaster;
+anita::DataRaster<float> bedDataRaster;
+anita::DataRaster<float> surfaceDataRaster;
+anita::DataRaster<float> iceThicknessDataRaster;
+
 /*
  * 		================= FUNCTIONS =========================
  */
@@ -222,7 +228,8 @@ void loadData(){
 		if(geoidData[i] != -9999.){
 			bedData[i] += geoidData[i];
 			surfaceData[i] += geoidData[i];
-		}		
+		}
+		std::cout << geoidData[i] << std::endl;		
 	}
 
 	print("Loading complete.");
@@ -507,8 +514,8 @@ void testDensityTraversal(){
 // 	outFile.close();
 // }
 
-void setDataRaster(std::string filePath, anita::DataRaster* dataRaster){
-	dataRaster = new anita::DataRaster(filePath);
+void importData(anita::DataRaster<float>& dataRaster, std::string filePath){
+	dataRaster.importData(filePath);
 }
 
 /*
@@ -517,12 +524,19 @@ void setDataRaster(std::string filePath, anita::DataRaster* dataRaster){
 
 int main(int argc, char **argv)
 {
-	loadData();
-	std::cout << surfaceData[0] << std::endl;
-	// anita::DataRaster* geoidDataRaster = nullptr;
+	// loadData();
+	// std::cout << surfaceData[0] << std::endl;
+	
 	// setDataRaster(filePathGeoid, geoidDataRaster);
-	// std::thread t1(setDataRaster, filePathGeoid, geoidDataRaster);
-	// t1.join();
+	std::thread t1(importData, std::ref(geoidDataRaster), std::ref(filePathGeoid));
+	std::thread t2(importData, std::ref(bedDataRaster), std::ref(filePathBed));
+	std::thread t3(importData, std::ref(surfaceDataRaster), std::ref(filePathSurface));
+	std::thread t4(importData, std::ref(iceThicknessDataRaster), std::ref(filePathIceThickness));
+	t1.join();
+	t2.join();
+	t3.join();
+	t4.join();
+	std::cout << geoidDataRaster.values[0] << std::endl;
 	print("Done...");
 	print("Press any key to close.");
 	std::cin.get(); // Wait for user input to terminate
