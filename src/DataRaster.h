@@ -7,13 +7,14 @@
 #include <fstream>
 #include <limits>
 #include "PREM.h"
+#include "BEDMAP.h"
+#include "Vector2.h"
 
 namespace anita{
 
-    template <typename T> class DataRaster{
+    template <typename T>
+    class DataRaster{
         T* values = nullptr;
-        unsigned int columns, rows;
-        const int dataInterval = 1000;
 
         std::streamsize getSizeOfFile(const std::string &filePath){
             std::ifstream dataFile;
@@ -31,18 +32,29 @@ namespace anita{
             void importData(const std::string& filePath){
                 std::streamsize byteCount = getSizeOfFile(filePath);
                 values = new T[byteCount/sizeof(T)];
-                std::ifstream dataFile(filePath, std::ifstream::in | std::ios::binary);
+                std::ifstream dataFile(filePath, std::ifstream::in | std::ifstream::binary);
                 dataFile.read(reinterpret_cast<char*>(values), byteCount);
             }
             
+            DataRaster(){}
+
             ~DataRaster(){
                 if(values){
-                    delete [] values;
+                    delete[] values;
                 }
             }
 
-            float getvalue(double x, double y){
-                return 0.;
+            std::vector<T> getCellValues(const anita::Vector2<double>& dataCoords) const {	
+                int xFloor = (int16_t)std::min(std::max(floor(dataCoords.x/anita::DATA_INTERVAL), 0.), anita::DATA_COLUMNS - 1.);
+                int yFloor = (int16_t)std::min(std::max(floor(dataCoords.y/anita::DATA_INTERVAL), 0.), anita::DATA_ROWS - 1.);
+                std::vector<T> cellValues{
+                    values[yFloor*(anita::DATA_COLUMNS - 1) + xFloor],
+                    values[yFloor*(anita::DATA_COLUMNS - 1) + std::min(xFloor + 1, anita::DATA_COLUMNS - 1)],
+                    values[std::min(yFloor + 1, anita::DATA_ROWS - 1)*(anita::DATA_COLUMNS - 1) + xFloor],
+                    values[std::min(yFloor + 1, anita::DATA_ROWS - 1)*(anita::DATA_COLUMNS - 1) + std::min(xFloor + 1, anita::DATA_COLUMNS - 1)],
+                };
+                return cellValues;
             }
+
         };
 }

@@ -14,197 +14,20 @@
 #include <algorithm>
 #include <iterator>
 
-#include "Vector.h"
+// Several constants, classes, and non-member functions
+// are separated into their own headers to reduce clutter
+// Everything lives under the 'anita' namespace
+
+#include "Vector2.h"
+#include "Vector3.h"
 #include "DataRaster.h"
 #include "Diagnostics.h"
 #include "QuadraticSolver.h"
 #include "ESS.h"
 #include "Filepaths.h"
 #include "ReverseFloat.h"
-#include "Projection.h"
-
-/*
- *		GLOBAL VARIABLES
- */
-
-///
-anita::DataRaster<float> geoidDataRaster;
-anita::DataRaster<float> bedDataRaster;
-anita::DataRaster<float> surfaceDataRaster;
-anita::DataRaster<float> iceThicknessDataRaster;
-
-/*
- * 		================= FUNCTIONS =========================
- */
-
-/*
- *		Misc.
- */
-
-void print(std::string message){
-	std::cout << message << std::endl;
-}
-
-// For some machines endianness is reversed
-
-
-/*
- *		DATA POLLING
- */
-
-std::vector<double> getPositionOfTau(const double x0, const double y0, const double z0,
-	const double xDir, const double yDir, const double zDir, const double tau){
-	std::vector<double> position{
-		x0 + tau * xDir,
-		y0 + tau * yDir,
-		z0 + tau * zDir
-	};
-	return position;
-}
-
-std::vector<double> getProjectionCoordinates(const double x, const double y, const double z){
-	double alpha = (-POLAR_EARTH_RADIUS - Z_PLANE)/(-POLAR_EARTH_RADIUS + z);
-	std::vector<double> projCoords{
-		alpha * x,
-		alpha * y
-	};
-	return projCoords;
-}
-
-std::vector<double> getDataCoordinates(const double xProj, const double yProj){
-	std::vector<double> dataCoordinates{
-		xProj+(DATA_COLUMNS*DATA_INTERVAL/2),
-		yProj+(DATA_ROWS*DATA_INTERVAL/2)
-	};
-	return dataCoordinates;
-}
-
-std::vector<double> getNormalizedUVCoordinates(const double xData, const double yData){
-	double xFrac, yFrac;
-	modf(xData/DATA_INTERVAL, &xFrac);
-	modf(yData/DATA_INTERVAL, &yFrac);
-	std::vector<double> normalizedUVs{
-		xFrac, yFrac
-	};
-	return normalizedUVs;
-}
-
-std::vector<double> getCellValues(const double xDataCoord, const double yDataCoord, const std::vector<double> &dataVector){	
-	int xFloor = (uint16_t)std::min(std::max(floor(xDataCoord/DATA_INTERVAL), 0.), DATA_COLUMNS - 1.);
-	int yFloor = (uint16_t)std::min(std::max(floor(yDataCoord/DATA_INTERVAL), 0.), DATA_ROWS - 1.);
-	std::vector<double> cellValues{
-		dataVector[yFloor*(DATA_COLUMNS - 1) + xFloor],
-		dataVector[yFloor*(DATA_COLUMNS - 1) + std::min(xFloor + 1, DATA_COLUMNS - 1)],
-		dataVector[std::min(yFloor + 1, DATA_ROWS - 1)*(DATA_COLUMNS - 1) + xFloor],
-		dataVector[std::min(yFloor + 1, DATA_ROWS - 1)*(DATA_COLUMNS - 1) + std::min(xFloor + 1, DATA_COLUMNS - 1)],
-	};
-	return cellValues;
-}
-
-double getDataValue(const double x, const double y, const double z, std::vector<double> &dataVector){	
-	std::vector<double> projCoords = getProjectionCoordinates(x, y, z);
-	std::vector<double> dataCoordinates = getDataCoordinates(projCoords[0], projCoords[1]);
-	std::vector<double> cellValues = getCellValues(dataCoordinates[0], dataCoordinates[1], dataVector);
-	std::vector<double> normalizedUVs = getNormalizedUVCoordinates(dataCoordinates[0], dataCoordinates[1]);
-	// Return bilinear interpolation of cell value based on UVs
-	return cellValues[0]
-	+ normalizedUVs[0]*(cellValues[1]-cellValues[0])
-	+ normalizedUVs[1]*(cellValues[2]-cellValues[0])
-	+ normalizedUVs[0]*normalizedUVs[1]*(cellValues[3]-cellValues[2]-cellValues[1]-cellValues[0]);
-}
-
-void loadData(){
-	print("Loading Antarctic bedrock and ice surface elevations into memory...");
-	std::ifstream dataFile(filePathGeoid, std::ios::binary);
-	dataFile.read(reinterpret_cast<char*>(geoidData.data()), geoidData.size()*sizeof(float));	
-	dataFile.close();
-	dataFile.open(filePathBed);
-	dataFile.read(reinterpret_cast<char*>(bedData.data()), bedData.size()*sizeof(float));
-	dataFile.close();
-	dataFile.open(filePathSurface);
-	dataFile.read(reinterpret_cast<char*>(surfaceData.data()), surfaceData.size()*sizeof(float));
-	dataFile.close();
-	dataFile.open(filePathIceThickness);
-	dataFile.read(reinterpret_cast<char*>(iceThicknessData.data()), iceThicknessData.size()*sizeof(float));
-	dataFile.close();
-
-	// Add geoid data to bed and ice to convert to WGS84 reference
-	for(unsigned long long i = 0; i < geoidData.size(); i++){
-		#ifdef _MSBF // Most significant bit first
-		geoidData[i] = reverseFloat(geoidData[i]);
-		bedData[i] = reverseFloat(bedData[i]);
-		surfaceData[i] = reverseFloat(surfaceData[i]);
-		iceThicknessData[i] = reverseFloat(iceThicknessData[i]);
-		#endif
-		if(geoidData[i] != -9999.){
-			bedData[i] += geoidData[i];
-			surfaceData[i] += geoidData[i];
-		}
-		std::cout << geoidData[i] << std::endl;		
-	}
-
-	print("Loading complete.");
-}
-
-
-
-/*
- *		PREM DENSITY TRAVERSAL
- */
-
-void normalizeVector(std::vector<double> &v){
-	double magsqr = 0;
-	for(unsigned int i = 0; i < v.size(); i++){
-		magsqr += v[i] * v[i];
-	}
-	if(magsqr == 0){
-		return;
-	}
-	magsqr = sqrt(magsqr);
-	for(unsigned int i = 0; i < v.size(); i++){
-		v[i] /= magsqr;
-	}
-}
-
-double getRadiusSqr(const double x, const double y, const double z){
-	return x*x + y*y + z*z;
-}
-
-double getRadius(const double x, const double y, const double z){
-	return sqrt(getRadiusSqr(x,y,z));
-}
-
-double getEllipsoidalRadius(const double x, const double y, const double z){	
-	return sqrt((EQUATORIAL_EARTH_RADIUS_SQR*(x*x + y*y))/(x*x + y*y + z*z) + (POLAR_EARTH_RADIUS_SQR*z*z)/(x*x + y*y + z*z));
-}
-
-double getDistanceToSurface(const double x, const double y, const double z, std::vector<double> &dataVector){
-	return getDataValue(x, y, z, dataVector) + getEllipsoidalRadius(x, y, z) - getRadius(x, y, z);
-}
-
-double getFirnDensity(double depth){
-	//TODO: need reference materials to obtain good function. Does exponential packing suffice?
-	return 0;
-}
-
-// Supply coefficients  in ax^2+bx+c form to obtain real solutions
-std::vector<double> solveQuadratic(double a, double b, double c){
-	std::vector<double> solutions;
-	double discriminant = b * b - 4 * a * c;
-	if(discriminant < 0){ // No real solutions found
-		return solutions; // Empty vector, size() == 0
-	}
-	// Solve real roots in a numerically stable way
-	if(b < 0){
-		solutions.push_back((2.0*c) / (-b + discriminant));
-		solutions.push_back((-b+discriminant) / (2.0*a));
-	}
-	else{
-		solutions.push_back((-b-discriminant) / (2.0*a));
-		solutions.push_back((2.0*c) / (-b - discriminant));
-	}
-	return solutions;
-}
+#include "BEDMAP.h"
+#include "Raycasting.h"
 
 std::vector<std::vector<double>> getIntersections(double a, double b, double c){
 	std::vector<double> intersectionsIngoing;
@@ -333,16 +156,16 @@ double getDensityTraversed(std::vector<double> &position, std::vector<double> &d
 
 double getGradientAlongRayAtPoint(const double x, const double y, const double z,
 	const double xDir, const double yDir, const double zDir, std::vector<double> &dataVector){
-		return (getDistanceToSurface(x+EPSILON*xDir, y+EPSILON*yDir, z+EPSILON*zDir, dataVector)
-		- getDistanceToSurface(x-EPSILON*xDir, y-EPSILON*yDir, z-EPSILON*zDir, dataVector))
-		/ (2 * EPSILON);
+		return (getDistanceToSurface(x+anita::EPSILON*xDir, y+anita::EPSILON*yDir, z+anita::EPSILON*zDir, dataVector)
+		- getDistanceToSurface(x-anita::EPSILON*xDir, y-anita::EPSILON*yDir, z-anita::EPSILON*zDir, dataVector))
+		/ (2 * anita::EPSILON);
 }
 
 std::vector<double> getCoefficientsOfQuadraticRaystep(const double x, const double y, const double z,
 	const double xDir, const double yDir, const double zDir, const double previousGradientAlongRay,
 	const double previousDistanceToSurface, const double tau0, std::vector<double> &dataVector){
 		std::vector<double> coefficients(3);
-		double tau1 = tau0 + RAYSTEP;
+		double tau1 = tau0 + anita::RAYSTEP;
 		double nextX = x + RAYSTEP*xDir;
 		double nextY = y + RAYSTEP*yDir;
 		double nextZ = z + RAYSTEP*zDir;
@@ -372,11 +195,11 @@ std::vector<double> getCoefficientsOfQuadraticRaystep(const double x, const doub
 
 void printConstants(){
 	std::cout << "Enumeration of physical constants used in code:" << std::endl;
-	std::cout << "Distance to horizon:			" << DISTANCE_TO_HORIZON << " meters." << std::endl;
-	std::cout << "Mean Earth radius:			" << MEAN_EARTH_RADIUS << " meters." << std::endl;
-	std::cout << "Polar Earth radius:			" << POLAR_EARTH_RADIUS << " meters."<< std::endl;
-	std::cout << "Mean Earth density:			" << MEAN_EARTH_DENSITY << " kilograms per cubic meter." << std::endl;
-	std::cout << "Vacuum speed of light:			" << SPEED_OF_LIGHT << " meters per second." << std::endl;
+	std::cout << "Distance to horizon:			" << anita::DISTANCE_TO_HORIZON << " meters." << std::endl;
+	std::cout << "Mean Earth radius:			" << anita::MEAN_EARTH_RADIUS << " meters." << std::endl;
+	std::cout << "Polar Earth radius:			" << anita::POLAR_EARTH_RADIUS << " meters."<< std::endl;
+	std::cout << "Mean Earth density:			" << anita::MEAN_EARTH_DENSITY << " kilograms per cubic meter." << std::endl;
+	std::cout << "Vacuum speed of light:			" << anita::SPEED_OF_LIGHT << " meters per second." << std::endl;
 	std::cout << std::endl;
 }
 
@@ -392,7 +215,7 @@ void testDensityTraversal(){
 	outFile.precision(20);
 	std::string outfilePath = "diagnostic.dat";
 	outFile.open(outfilePath);
-	auto position = std::vector<double>{0,0,-POLAR_EARTH_RADIUS - 1000}; // geometric south pole 
+	auto position = std::vector<double>{0,0,-anita::POLAR_EARTH_RADIUS - 1000}; // geometric south pole 
 	auto direction = std::vector<double>{0,0,1.00}; // +Z direction
 	unsigned int n = 100;
 	double phi;
@@ -439,10 +262,10 @@ int main(int argc, char **argv)
 	// std::cout << surfaceData[0] << std::endl;
 	
 	// setDataRaster(filePathGeoid, geoidDataRaster);
-	std::thread t1(importData, std::ref(geoidDataRaster), std::ref(filePathGeoid));
-	std::thread t2(importData, std::ref(bedDataRaster), std::ref(filePathBed));
-	std::thread t3(importData, std::ref(surfaceDataRaster), std::ref(filePathSurface));
-	std::thread t4(importData, std::ref(iceThicknessDataRaster), std::ref(filePathIceThickness));
+	std::thread t1(importData, std::ref(anita::geoidDataRaster), std::ref(anita::filePathGeoid));
+	std::thread t2(importData, std::ref(anita::bedDataRaster), std::ref(anita::filePathBed));
+	std::thread t3(importData, std::ref(anita::surfaceDataRaster), std::ref(anita::filePathSurface));
+	std::thread t4(importData, std::ref(anita::iceThicknessDataRaster), std::ref(anita::filePathIceThickness));
 	t1.join();
 	t2.join();
 	t3.join();
