@@ -26,6 +26,8 @@ void anita::testDataRaster(){
     // anita::DataRaster testRaster(std::string("gl04c_geiod_to_wgs84.flt"));
 }
 
+
+
 // void anita::testDensityTraversal(){
 //     std::cout << "Generating test data of density traversal for swept hemisphere through Earth from point at south pole and saving to 'diagnostic.dat'." << std::endl;
 //     std::ofstream outFile;

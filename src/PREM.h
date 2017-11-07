@@ -10,8 +10,8 @@ namespace anita{
     constexpr double POLAR_EARTH_RADIUS_SQR = POLAR_EARTH_RADIUS * POLAR_EARTH_RADIUS; // meters squared
     
     // Normalized radii of density profile shells listed from the surface inwards to the core.
-    // Obtained from spherical PREM to be mapped to normalized WGS84 ellipsoid equation
-    const double DENSITY_PROFILE_RADII[]{
+    // Obtained from spherical PREM to be mapped to normalized WGS84 ellipsoid equation    
+    const std::vector<double> DENSITY_PROFILE_RADII{
         1.0,								// Ocean (Exclude ocean from antarctic side of ray traversal by using constant crust density up to bedrock)
         6368000.0 / MEAN_EARTH_RADIUS,		// Crust
         6356000.0 / MEAN_EARTH_RADIUS,		// Crust

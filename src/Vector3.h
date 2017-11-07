@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <fstream>
+#include <cmath>
 namespace anita{
     template <typename T>
     class Vector3{        
@@ -55,7 +56,7 @@ namespace anita{
         Vector3<T> norm() const {
             T magnitude = sqrt(x*x + y*y + z*z);
             if(magnitude == (T)0){
-                return this;
+                return Vector3<T>((T)0, (T)0, T(0));
             }
             else{
                 return Vector3(x/magnitude, y/magnitude, z/magnitude);
