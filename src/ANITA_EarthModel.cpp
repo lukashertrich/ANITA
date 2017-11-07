@@ -2,8 +2,6 @@
  * 		ANITA Earth Model
  */
 
-#define _USE_MATH_DEFINES
-
 #include <iostream>
 #include <string>
 #include <thread>
@@ -58,6 +56,7 @@ int main(int argc, char **argv)
 	t2.join();
 	t3.join();
 	t4.join();
+	std::cout << anita::getDataValue(anita::Vector3<double>(5000., -30000., -anita::POLAR_EARTH_RADIUS), surfaceDataRaster)<< std::endl;
 	std::cout << "Done..." << std::endl;
 	std::cout << "Press any key to close." << std::endl;
 	std::cin.get(); // Wait for user input to terminate

@@ -19,9 +19,9 @@ anita::Vector2<double> anita::getDataCoordinates(const anita::Vector2<double>& p
 }
 
 anita::Vector2<double> anita::getNormalizedUVCoordinates(const anita::Vector2<double>& dataCoords){
-    double xFrac, yFrac;
-    modf(dataCoords.x / anita::DATA_INTERVAL, &xFrac);
-    modf(dataCoords.y / anita::DATA_INTERVAL, &yFrac);
+    double xFrac, yFrac, xInt, yInt;
+    xFrac = modf(dataCoords.x / anita::DATA_INTERVAL, &xInt);
+    yFrac = modf(dataCoords.y / anita::DATA_INTERVAL, &yInt);
     return anita::Vector2<double>(xFrac, yFrac);
 }
 
@@ -29,12 +29,12 @@ double anita::getDataValue(const anita::Vector3<double>& pos, const anita::DataR
     const auto projCoords = anita::getProjectionCoordinates(pos);
     const auto dataCoords = anita::getDataCoordinates(projCoords);
     const auto cellValues = dataRaster.getCellValues(dataCoords);
-    const auto normalizedUVs = anita::getNormalizedUVCoordinates(dataCoords);
+	const auto normalizedUVs = anita::getNormalizedUVCoordinates(dataCoords);
     // Return bilinear interpolation of cell value based on UVs
-    return cellValues[0]
-    + normalizedUVs.x*(cellValues[1]-cellValues[0])
-    + normalizedUVs.y*(cellValues[2]-cellValues[0])
-    + normalizedUVs.x*normalizedUVs.y*(cellValues[3]-cellValues[2]-cellValues[1]-cellValues[0]);
+	return cellValues[0]*((1.0-normalizedUVs.x)*(1.0-normalizedUVs.y))
+		+ cellValues[1]*((normalizedUVs.x)*(1.0-normalizedUVs.y))
+		+ cellValues[2]*((1.0-normalizedUVs.x)*(normalizedUVs.y))
+		+ cellValues[3]*((normalizedUVs.x)*(normalizedUVs.y));
 }
 
 double anita::getEllipsoidalRadius(const anita::Vector3<double>& pos){	
