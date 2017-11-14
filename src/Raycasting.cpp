@@ -46,7 +46,7 @@ namespace anita{
 		);
 	}
 
-	double getDistanceToSurface(const Vector3<double>& pos, DataRaster<float> dataRaster){
+	double getDistanceToSurface(const Vector3<double>& pos, const DataRaster<float>& dataRaster){
 		return getEllipsoidalRadius(pos) + getDataValue(pos, dataRaster) - pos.mag();
 	}
 
@@ -101,12 +101,12 @@ namespace anita{
 	// Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
 	// in order to calculate integral of traversed density across PREM profiles applied to WGS84 ellipsoid
 	double getDensityTraversed(const Vector3<double>& pos, const Vector3<double>& direction){
-		auto dir = direction.norm();
+		const auto dir = direction.norm();
 		
 		// Coefficients of quadratic equation to solve against squared normalized PREM profile radii, (ax^2 + bx + c)
-		double a = (dir.x * dir.x + dir.y * dir.y) / EQUATORIAL_EARTH_RADIUS_SQR + (dir.z * dir.z) / POLAR_EARTH_RADIUS_SQR;
-		double b = 2.0 * ((pos.x*dir.x + pos.y*dir.y) / EQUATORIAL_EARTH_RADIUS_SQR + (pos.z*dir.z) / POLAR_EARTH_RADIUS_SQR);
-		double c =  (pos.x*pos.x + pos.y*pos.y) / EQUATORIAL_EARTH_RADIUS_SQR + (pos.z*pos.z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
+		const double a = (dir.x * dir.x + dir.y * dir.y) / EQUATORIAL_EARTH_RADIUS_SQR + (dir.z * dir.z) / POLAR_EARTH_RADIUS_SQR;
+		const double b = 2.0 * ((pos.x*dir.x + pos.y*dir.y) / EQUATORIAL_EARTH_RADIUS_SQR + (pos.z*dir.z) / POLAR_EARTH_RADIUS_SQR);
+		const double c =  (pos.x*pos.x + pos.y*pos.y) / EQUATORIAL_EARTH_RADIUS_SQR + (pos.z*pos.z) / POLAR_EARTH_RADIUS_SQR; // subtract respective profile radius squared to complete coefficient
 			
 		auto intersections = getIntersections(a,b,c);
 		
@@ -183,5 +183,43 @@ namespace anita{
 			coefficients[1] = (nextDistanceToSurface - previousDistanceToSurface - coefficients[0] * (tau1*tau1 - tau0*tau0)) / RAYSTEP;
 			coefficients[2] = previousDistanceToSurface - coefficients[1] * tau0 - coefficients[0] * tau0 * tau0;
 			return coefficients;
+	}
+		
+	std::vector<double> getTauOfSurfaceIntersections(const Vector3<double>& pos, const Vector3<double> direction, const DataRaster<float>& dataRaster){
+		const auto dir = direction.norm();
+		const auto quadraticCoefficients = getQuadraticCoefficientsOfNormalizedEllipsoidalRay(pos, dir);
+		const auto lower = solveQuadratic(quadraticCoefficients[0], quadraticCoefficients[1], quadraticCoefficients[2] - LOWER_SURFACE_BOUND * LOWER_SURFACE_BOUND);
+		const auto upper = solveQuadratic(quadraticCoefficients[0], quadraticCoefficients[1], quadraticCoefficients[2] - UPPER_SURFACE_BOUND * UPPER_SURFACE_BOUND);
+		
+		// Surface intersections
+		std::vector<double> intersections;
+
+		// Does ray never potentially intersect Earth? (no intersections with upper bounds)
+		// Or, does ray point away from Earth? (Both tau of intersections are negative, behind starting point)
+		// (Short-circuit evaluation prevents accessing indices if size() == 0)
+		if((upper.size() == 0) || ((upper[0] < 0) && (upper[1] < 0))){
+			return intersections; // These are surface intersections, NOT upper bounds intersections
+		}
+
+		double tau;
+		double distanceToSurface;
+		double gradientAlongRay;
+		Vector3<double> position = pos;
+
+		// Does ray intersect lower bounds, or are intersections behind starting point?
+		// TODO: lower bounds considerations to optimize evaluation, ignoring for now with 'true'
+		if(true || (lower.size() == 0) || ((lower[0] < 0) && (lower[1] < 0))){
+			// ignore lower bounds intersections and iterate to intersect surface
+			tau = max(0, upper[0]);
+			while (tau < upper[1]){
+				gradientAlongRay = getGradientAlongRayAtPoint(position, dir, dataRaster)
+			}
+		}
+		else{
+			// TODO
+		}
+
+		
+		return intersections;
 	}
 }

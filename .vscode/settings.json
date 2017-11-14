@@ -34,6 +34,7 @@
         "type_traits": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "C_Cpp.intelliSenseEngine": "Default"
     }
 }

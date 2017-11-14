@@ -7,7 +7,7 @@ namespace anita{
     class Vector3{        
     public:
         const T x, y, z;
-        Vector3(T X, T Y, T Z) : x(X), y(Y), z(Z){}        
+        Vector3(T x, T y, T z) : x(x), y(y), z(z){}        
 
         Vector3<T> operator+ (const Vector3<T>& B) const {
             return Vector3(x + B.x, y + B.y, z + B.z);
@@ -56,7 +56,7 @@ namespace anita{
         Vector3<T> norm() const {
             T magnitude = sqrt(x*x + y*y + z*z);
             if(magnitude == (T)0){
-                return Vector3<T>((T)0, (T)0, T(0));
+                return *this;
             }
             else{
                 return Vector3(x/magnitude, y/magnitude, z/magnitude);

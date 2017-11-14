@@ -6,7 +6,7 @@ namespace anita{
     class Vector2{        
     public:
         const T x, y;
-        Vector2(T X, T Y) : x(X), y(Y){}        
+        Vector2(T x, T y) : x(x), y(y){}        
 
         Vector2<T> operator+ (const Vector2<T>& B) const {
             return Vector2(x + B.x, y + B.y);
@@ -55,7 +55,7 @@ namespace anita{
         Vector2<T> norm() const {
             T magnitude = sqrt(x*x + y*y);
             if(magnitude == (T)0){
-                return this;
+                return *this;
             }
             else{
                 return Vector2(x/magnitude, y/magnitude);
