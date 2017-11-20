@@ -1,6 +1,6 @@
 #pragma once
 namespace anita{
-    // Coefficients for a polynomial fit to European Spallation Source from 1e17 to 1e21 eV.
+    // Coefficients for a polynomial fit to ESS from 1e17 to 1e21 eV.
     const double ESS_COEFFICIENTS[6] = {
         1.661142492611783e4,
         -4.616049469872646e3,

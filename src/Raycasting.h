@@ -3,6 +3,7 @@
 #include "Vector2.h"
 #include "Vector3.h"
 #include "DataRaster.h"
+#include "Neutrino.h"
 namespace anita{
     Vector3<double> getPositionOfTau(const Vector3<double>& pos, const Vector3<double>& dir, const double tau);    
     Vector2<double> getProjectionCoordinates(const Vector3<double>& pos);    
@@ -20,4 +21,5 @@ namespace anita{
     double getGradientAlongRayAtPoint(const Vector3<double>& pos, const Vector3<double>& direction, const DataRaster<float>& dataRaster);
     std::vector<double> getCoefficientsOfQuadraticRaystep(const Vector3<double>& pos, const Vector3<double>& direction, const double previousGradientAlongRay,const double previousDistanceToSurface, const double tau0, const DataRaster<float>& dataRaster);
     std::vector<double> getTauOfSurfaceIntersections(const Vector3<double>& pos, const Vector3<double> direction, const DataRaster<float>& dataRaster);
+    double getProbabilityOfInteraction(const Neutrino& neutrino);
 }

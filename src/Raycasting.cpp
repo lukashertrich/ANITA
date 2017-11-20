@@ -1,6 +1,8 @@
+#define _USING_MATH_DEFINES
 #include "Raycasting.h"
 #include "BEDMAP.h"
 #include "QuadraticSolver.h"
+#include <cmath>
 namespace anita{
 
 	Vector3<double> getPositionOfTau(const Vector3<double>& pos, const Vector3<double>& dir, const double tau){
@@ -210,9 +212,9 @@ namespace anita{
 		// TODO: lower bounds considerations to optimize evaluation, ignoring for now with 'true'
 		if(true || (lower.size() == 0) || ((lower[0] < 0) && (lower[1] < 0))){
 			// ignore lower bounds intersections and iterate to intersect surface
-			tau = max(0, upper[0]);
+			tau = std::max(0.0, upper[0]);
 			while (tau < upper[1]){
-				gradientAlongRay = getGradientAlongRayAtPoint(position, dir, dataRaster)
+				gradientAlongRay = getGradientAlongRayAtPoint(position, dir, dataRaster);
 			}
 		}
 		else{
@@ -221,5 +223,9 @@ namespace anita{
 
 		
 		return intersections;
+	}
+
+	double getProbabilityOfInteraction(const Neutrino& neutrino){
+		
 	}
 }
