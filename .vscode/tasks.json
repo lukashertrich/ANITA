@@ -5,7 +5,7 @@
     "tasks": [
         {
             "group":"build",
-            "taskName": "Build g++ [RELEASE]",
+            "label": "Build g++ [RELEASE]",
             "type": "shell",
             "command": "g++",            
             "args": [
@@ -28,7 +28,7 @@
         },
         {
             "group":"build",
-            "taskName": "Build g++ [DEBUG]",
+            "label": "Build g++ [DEBUG]",
             "type": "shell",
             "command": "g++",
             "args": [
