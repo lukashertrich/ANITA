@@ -2,6 +2,7 @@
 namespace anita{
     void printConstants();
     void printUsage();
-    void testDensityTraversal();
+    void testInteractionLength();
     void testDataRaster();
+    void testTransmittance();
 }

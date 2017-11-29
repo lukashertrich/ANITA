@@ -17,9 +17,10 @@ namespace anita{
     double computeQuadraticDensityTraversal(const double a, const double b, const double c, const double t);
     double computeCubicDensityTraversal(const double a, const double b, const double c, const double t);
     std::vector<double> getQuadraticCoefficientsOfNormalizedEllipsoidalRay(const Vector3<double>& pos, const Vector3<double>& direction);
-    double getDensityTraversed(const Vector3<double>& pos, const Vector3<double>& direction);
+    double getInteractionLength(const Vector3<double>& pos, const Vector3<double>& direction);
     double getGradientAlongRayAtPoint(const Vector3<double>& pos, const Vector3<double>& direction, const DataRaster<float>& dataRaster);
     std::vector<double> getCoefficientsOfQuadraticRaystep(const Vector3<double>& pos, const Vector3<double>& direction, const double previousGradientAlongRay,const double previousDistanceToSurface, const double tau0, const DataRaster<float>& dataRaster);
     std::vector<double> getTauOfSurfaceIntersections(const Vector3<double>& pos, const Vector3<double> direction, const DataRaster<float>& dataRaster);
     double getProbabilityOfInteraction(const Neutrino& neutrino);
+    std::vector<double> getTransmittedFraction(double energy, double interactionLength);
 }

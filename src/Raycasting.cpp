@@ -102,7 +102,7 @@ namespace anita{
 
 	// Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
 	// in order to calculate integral of traversed density across PREM profiles applied to WGS84 ellipsoid
-	double getDensityTraversed(const Vector3<double>& pos, const Vector3<double>& direction){
+	double getInteractionLength(const Vector3<double>& pos, const Vector3<double>& direction){
 		const auto dir = direction.norm();
 		
 		// Coefficients of quadratic equation to solve against squared normalized PREM profile radii, (ax^2 + bx + c)
@@ -217,6 +217,7 @@ namespace anita{
 			while (tau < upper[1]){
 				gradientAlongRay = getGradientAlongRayAtPoint(position, dir, dataRaster);
 			}
+			std::cout << gradientAlongRay << std::endl;
 		}
 		else{
 			// TODO
@@ -229,4 +230,14 @@ namespace anita{
 	// double getProbabilityOfInteraction(const Neutrino& neutrino){
 		
 	// }
+
+	std::vector<double> getTransmittedFraction(const double energy, const double interactionLength){
+		auto crossSections = getCrossSections(energy);
+		std::vector<double> transmittedFractions;
+		transmittedFractions.reserve(6);
+		for(int i = 0; i < 6; i++){
+			transmittedFractions.push_back(exp(-crossSections[i] * interactionLength / NUCLEON_MASS));
+		}
+		return transmittedFractions;
+	}
 }

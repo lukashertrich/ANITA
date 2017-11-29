@@ -2,8 +2,8 @@
  * 		ANITA Earth Model
  */
 
-// Build from terminal in directory containing src folder, not inside src itself
-// g++ -m64 -Wall -std=c++11 -pthread -march=native src/Raycasting.cpp src/Diagnostics.cpp src/QuadraticSolver.cpp src/ANITA_EarthModel.cpp -o bin/ANITA_EarthModel
+// Build from terminal in a project directory containing src folder, not inside src itself.
+// g++ -m64 -Wall -std=c++11 -pthread -march=native src/Raycasting.cpp src/Diagnostics.cpp src/QuadraticSolver.cpp src/Neutrino.cpp src/ANITA_EarthModel.cpp -o bin/ANITA_EarthModel
 
 #include <iostream>
 #include <string>
@@ -64,8 +64,10 @@ void initialize(){
 
 int main(int argc, char **argv)
 {	
+	std::cout << "Loading BEDMAP 2 data into memory..." << std::endl;
 	initialize();
-	std::cout << getDataValue(Vector3<double>(5000., -30000., -POLAR_EARTH_RADIUS), surfaceDataRaster)<< std::endl;
+	//std::cout << getDataValue(Vector3<double>(5000., -30000., -POLAR_EARTH_RADIUS), surfaceDataRaster)<< std::endl;
+	testInteractionLength();
 	std::cout << "Done..." << std::endl;
 	std::cout << "Press any key to close." << std::endl;
 	std::cin.get();

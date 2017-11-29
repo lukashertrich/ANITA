@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <vector>
 #include <cmath>
@@ -7,6 +8,8 @@
 #include "Diagnostics.h"
 #include "PREM.h"
 #include "DataRaster.h"
+#include "Vector3.h"
+#include "Raycasting.h"
 
 namespace anita{
 
@@ -25,6 +28,33 @@ namespace anita{
 
     void testDataRaster(){
         // DataRaster testRaster(std::string("gl04c_geiod_to_wgs84.flt"));
+    }
+
+    void testInteractionLength(){
+        constexpr double energy = 1.0e19;
+        auto position = Vector3<double>(0.0, 1.0, -POLAR_EARTH_RADIUS - 1.0); // South pole with small y offset to avoid origin on raycast
+        auto direction = Vector3<double>(1.0, 0.0, 0.01);
+        double interactionLength = getInteractionLength(position, direction);
+        auto transmittedFraction = getTransmittedFraction(energy, interactionLength);
+        auto crossSections = getCrossSections(energy);
+        
+        std::cout << "Fraction of initial flux transmitted through Earth model at: " << energy << " eV," << std::endl;
+        std::cout << "with interaction length: " << interactionLength << " kg / m^2" << std::endl;
+        std::cout << std::fixed << std::setprecision(4) << std::scientific;
+        std::cout << "Charged current transmittance:                 " << transmittedFraction[0] << std::endl;
+        std::cout << "Neutral current transmittance:                 " << transmittedFraction[1] << std::endl;
+        std::cout << "Total transmittance:                           " << transmittedFraction[2] << std::endl;
+        std::cout << "Charged current transmittance [Antineutrino]:  " << transmittedFraction[3] << std::endl;
+        std::cout << "Neutral current transmittance [Antineutrino]:  " << transmittedFraction[4] << std::endl;
+        std::cout << "Total transmittance [Antineutrino]:            " << transmittedFraction[5] << std::endl;
+        std::cout << std::endl;
+        std::cout << "Cross sections [m^2]:" << std::endl;
+        std::cout << "Charged current:                 " << crossSections[0] << std::endl;
+        std::cout << "Neutral current:                 " << crossSections[1] << std::endl;
+        std::cout << "Total:                           " << crossSections[2] << std::endl;
+        std::cout << "Charged current [Antineutrino]:  " << crossSections[3] << std::endl;
+        std::cout << "Neutral current [Antineutrino]:  " << crossSections[4] << std::endl;
+        std::cout << "Total [Antineutrino]:            " << crossSections[5] << std::endl;
     }
 
 
