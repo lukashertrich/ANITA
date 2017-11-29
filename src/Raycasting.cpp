@@ -204,14 +204,15 @@ namespace anita{
 		}
 
 		double tau;
-		double distanceToSurface;
-		double gradientAlongRay;
+		// double distanceToSurface;
+		
 		Vector3<double> position = pos;
 
 		// Does ray intersect lower bounds, or are intersections behind starting point?
 		// TODO: lower bounds considerations to optimize evaluation, ignoring for now with 'true'
 		if(true || (lower.size() == 0) || ((lower[0] < 0) && (lower[1] < 0))){
 			// ignore lower bounds intersections and iterate to intersect surface
+			double gradientAlongRay;
 			tau = std::max(0.0, upper[0]);
 			while (tau < upper[1]){
 				gradientAlongRay = getGradientAlongRayAtPoint(position, dir, dataRaster);
@@ -225,7 +226,7 @@ namespace anita{
 		return intersections;
 	}
 
-	double getProbabilityOfInteraction(const Neutrino& neutrino){
+	// double getProbabilityOfInteraction(const Neutrino& neutrino){
 		
-	}
+	// }
 }
