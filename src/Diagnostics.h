@@ -6,4 +6,5 @@ namespace anita{
     void testDataRaster();
     void testTransmittance();
     void testFluxMapOutput();
+    void testAngularTrace();
 }

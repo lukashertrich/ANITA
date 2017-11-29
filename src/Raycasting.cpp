@@ -260,4 +260,23 @@ namespace anita{
 		}
 		outFile.close();
 	}
+
+	void outputAngularTrace(const Vector3<double>& position, const double energy, const unsigned long long resolution){
+		std::ofstream outFile("angularTrace.dat");
+		outFile << std::fixed << std::setprecision(20) << std::scientific;
+		double theta, interactionLength;
+		for (unsigned long long i = 0; i < resolution; i++){
+			theta = M_PI_2 * (1.0 * i / resolution);
+			auto direction = Vector3<double>{cos(theta), 0.0, sin(theta)};
+			interactionLength = getInteractionLength(position, direction);
+			auto transmittedFractions = getTransmittedFraction(energy,interactionLength);
+			outFile << theta << "	";
+			outFile << transmittedFractions[0] << "	";
+			outFile << transmittedFractions[1] << "	";
+			outFile << transmittedFractions[2] << "	";
+			outFile << transmittedFractions[3] << "	";
+			outFile << transmittedFractions[4] << "	";
+			outFile << transmittedFractions[5] << std::endl;
+		}
+	}
 }

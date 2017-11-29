@@ -68,7 +68,8 @@ int main(int argc, char **argv)
 	initialize();
 	//std::cout << getDataValue(Vector3<double>(5000., -30000., -POLAR_EARTH_RADIUS), surfaceDataRaster)<< std::endl;
 	//testInteractionLength();
-	testFluxMapOutput();
+	// testFluxMapOutput();
+	testAngularTrace();
 	std::cout << "Done..." << std::endl;
 	std::cout << "Press any key to close." << std::endl;
 	std::cin.get();

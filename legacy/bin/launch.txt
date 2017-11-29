@@ -1,3 +1,3 @@
 gcc anita_earthmodel2.c -o ./bin/anita_earthmodel2 -lm -O3
 
-./anita_earthmodel2 10 Enu 1.0e19 3000 5.0e-36
+./anita_earthmodel2 1 Enu 1.0e19 3000 5.0e-36

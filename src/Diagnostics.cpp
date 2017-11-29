@@ -63,6 +63,10 @@ namespace anita{
         outputFluxMap(position, energy, 100);
     }
 
+    void testAngularTrace(){
+        auto position = Vector3<double>{0.0, 0.0, -POLAR_EARTH_RADIUS};
+        outputAngularTrace(position, 1.0e19, 1000);
+    }
     // void testDensityTraversal(){
     //     std::cout << "Generating test data of density traversal for swept hemisphere through Earth from point at south pole and saving to 'diagnostic.dat'." << std::endl;
     //     std::ofstream outFile;
