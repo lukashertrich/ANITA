@@ -2,7 +2,8 @@
  * 		ANITA Earth Model
  */
 
-
+// Build from terminal in directory containing src folder, not inside src itself
+// g++ -m64 -Wall -std=c++11 -pthread -march=native src/Raycasting.cpp src/Diagnostics.cpp src/QuadraticSolver.cpp src/ANITA_EarthModel.cpp -o bin/ANITA_EarthModel
 
 #include <iostream>
 #include <string>
