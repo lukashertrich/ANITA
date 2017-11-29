@@ -1,8 +1,10 @@
 #define _USING_MATH_DEFINES
+#include <cmath>
+#include <fstream>
+#include <iomanip>
 #include "Raycasting.h"
 #include "BEDMAP.h"
 #include "QuadraticSolver.h"
-#include <cmath>
 namespace anita{
 
 	Vector3<double> getPositionOfTau(const Vector3<double>& pos, const Vector3<double>& dir, const double tau){
@@ -239,5 +241,23 @@ namespace anita{
 			transmittedFractions.push_back(exp(-crossSections[i] * interactionLength / NUCLEON_MASS));
 		}
 		return transmittedFractions;
+	}
+
+	void outputFluxMap(const Vector3<double> position, const double energy, const unsigned long long resolution){
+		std::ofstream outFile("fluxMap.dat");
+		double theta, phi, interactionLength;
+		for(unsigned long long xy = 0; xy < resolution; xy++){
+			phi = 2 * M_PI * (1.0 * xy / resolution);
+			for(unsigned long long z = 0; z < resolution; z++){
+				theta = acos(2.0 * (1.0 * z / resolution) - 1.0);
+				auto direction = Vector3<double>{sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta)};
+				interactionLength = getInteractionLength(position, direction);
+				auto transmittedFractions = getTransmittedFraction(energy, interactionLength);
+				outFile << std::setprecision(20) << phi << "	" << theta << "	" << std::scientific 
+				<< transmittedFractions[2] << std::endl;
+			}
+			outFile << std::endl;
+		}
+		outFile.close();
 	}
 }

@@ -22,5 +22,6 @@ namespace anita{
     std::vector<double> getCoefficientsOfQuadraticRaystep(const Vector3<double>& pos, const Vector3<double>& direction, const double previousGradientAlongRay,const double previousDistanceToSurface, const double tau0, const DataRaster<float>& dataRaster);
     std::vector<double> getTauOfSurfaceIntersections(const Vector3<double>& pos, const Vector3<double> direction, const DataRaster<float>& dataRaster);
     double getProbabilityOfInteraction(const Neutrino& neutrino);
-    std::vector<double> getTransmittedFraction(double energy, double interactionLength);
+    std::vector<double> getTransmittedFraction(const double energy, const double interactionLength);
+    void outputFluxMap(const Vector3<double> position, const double energy, const unsigned long long resolution); 
 }

@@ -35,6 +35,7 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "cstring": "cpp",
-        "C_Cpp.intelliSenseEngine": "Default"
+        "C_Cpp.intelliSenseEngine": "Default",
+        "iomanip": "cpp"
     }
 }

@@ -67,7 +67,8 @@ int main(int argc, char **argv)
 	std::cout << "Loading BEDMAP 2 data into memory..." << std::endl;
 	initialize();
 	//std::cout << getDataValue(Vector3<double>(5000., -30000., -POLAR_EARTH_RADIUS), surfaceDataRaster)<< std::endl;
-	testInteractionLength();
+	//testInteractionLength();
+	testFluxMapOutput();
 	std::cout << "Done..." << std::endl;
 	std::cout << "Press any key to close." << std::endl;
 	std::cin.get();

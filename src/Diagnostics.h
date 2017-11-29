@@ -5,4 +5,5 @@ namespace anita{
     void testInteractionLength();
     void testDataRaster();
     void testTransmittance();
+    void testFluxMapOutput();
 }
