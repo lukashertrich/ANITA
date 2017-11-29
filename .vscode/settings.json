@@ -37,5 +37,6 @@
         "cstring": "cpp",
         "C_Cpp.intelliSenseEngine": "Default",
         "iomanip": "cpp"
-    }
+    },
+    "git.autofetch": false
 }
