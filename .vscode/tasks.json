@@ -49,6 +49,23 @@
             "problemMatcher": [
                 "$gcc"
             ]
+        },
+        {
+            "group":"build",
+            "label": "Build Legacy Earth Model",
+            "type": "shell",
+            "command": "gcc",            
+            "args": [                
+                "-Wall",
+                "-O3",
+                "legacy/anita_earthmodel2.c",
+                "-o",
+                "bin/anita_earthmodel2"
+
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ]
         }
     ]
 }
