@@ -10,6 +10,7 @@
 #include "DataRaster.h"
 #include "Vector3.h"
 #include "Raycasting.h"
+#include "Output.h"
 
 namespace anita{
 
@@ -67,6 +68,12 @@ namespace anita{
         auto position = Vector3<double>{0.0, 0.0, -POLAR_EARTH_RADIUS};
         outputAngularTrace(position, 1.0e19, 1000);
     }
+
+    void testEnergySpectrumAngularTrace(){
+        auto position = Vector3<double>{0.0, 0.0, -POLAR_EARTH_RADIUS};
+        outputEnergySpectrumAngularTrace(position, 1e11, 1e21, 1000);
+    }
+
     // void testDensityTraversal(){
     //     std::cout << "Generating test data of density traversal for swept hemisphere through Earth from point at south pole and saving to 'diagnostic.dat'." << std::endl;
     //     std::ofstream outFile;

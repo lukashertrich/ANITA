@@ -7,4 +7,5 @@ namespace anita{
     void testTransmittance();
     void testFluxMapOutput();
     void testAngularTrace();
+    void testEnergySpectrumAngularTrace();
 }

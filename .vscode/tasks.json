@@ -18,6 +18,7 @@
                 "src/Diagnostics.cpp",
                 "src/QuadraticSolver.cpp",
                 "src/Neutrino.cpp",
+                "src/Output.cpp",                
                 "src/ANITA_EarthModel.cpp",        
                 "-o",
                 "bin/ANITA_EarthModel"
@@ -43,7 +44,8 @@
                 "src/Raycasting.cpp",
                 "src/Diagnostics.cpp",
                 "src/QuadraticSolver.cpp",
-                "src/Neutrino.cpp",                
+                "src/Neutrino.cpp",
+                "src/Output.cpp",                
                 "src/ANITA_EarthModel.cpp",                
                 "-o",
                 "bin/ANITA_EarthModel"        
