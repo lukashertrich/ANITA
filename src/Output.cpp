@@ -52,7 +52,7 @@ namespace anita{
         std::ofstream outFile("energySpectrumAngularTrace.dat");
 		outFile << std::fixed << std::setprecision(20) << std::scientific;
 		double theta, interactionLength, energy;
-        for(unsigned long long j = 0; j < resolution; j++){
+        for(unsigned long long j = 0; j <= resolution; j++){
             energy = minE + j * interval;
             for (unsigned long long i = 0; i < resolution; i++){
                 theta = M_PI_2 * (1.0 * i / resolution);

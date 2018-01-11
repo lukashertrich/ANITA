@@ -71,7 +71,7 @@ namespace anita{
 
     void testEnergySpectrumAngularTrace(){
         auto position = Vector3<double>{0.0, 0.0, -POLAR_EARTH_RADIUS};
-        outputEnergySpectrumAngularTrace(position, 1e11, 1e21, 1000);
+        outputEnergySpectrumAngularTrace(position, 1e17, 1e21, 300);
     }
 
     // void testDensityTraversal(){

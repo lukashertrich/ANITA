@@ -2,9 +2,9 @@
 namespace anita{
     float reverseFloat( const float inFloat )
     {
-       float retVal;
+       float returnValue;
        char *floatToConvert = ( char* ) &inFloat;
-       char *returnFloat = ( char* ) &retVal;
+       char *returnFloat = ( char* ) &returnValue;
     
        // swap the bytes into a temporary buffer
        returnFloat[0] = floatToConvert[3];
@@ -12,6 +12,6 @@ namespace anita{
        returnFloat[2] = floatToConvert[1];
        returnFloat[3] = floatToConvert[0];
     
-       return retVal;
+       return returnValue;
     }
 }
