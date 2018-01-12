@@ -27,8 +27,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "/usr/include/x86_64-linux-gnu/c++/6.3.0",
-                "/usr/include/c++/6.3.0",
+                "/usr/include/x86_64-linux-gnu/c++/7.2.0",
+                "/usr/include/c++/7.2.0",
                 "/usr/local/include",
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
@@ -40,8 +40,8 @@
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
-                    "/usr/include/x86_64-linux-gnu/c++/6.3.0",
-                    "/usr/include/c++/6.3.0",
+                    "/usr/include/x86_64-linux-gnu/c++/7.2.0",
+                    "/usr/include/c++/7.2.0",
                     "/usr/local/include",
                     "/usr/include/x86_64-linux-gnu",
                     "/usr/include",
