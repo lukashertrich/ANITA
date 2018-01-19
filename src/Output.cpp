@@ -32,7 +32,7 @@ namespace anita{
 			auto direction = Vector3<double>{cos(theta), 0.0, sin(theta)};
 			interactionLength = getInteractionLength(position, direction);
 			auto transmittedFractions = getTransmittedFraction(energy,interactionLength);
-			outFile << theta << "	";
+			outFile << 90.0 - (theta * 180.0 / M_PI) << "	";
 			outFile << transmittedFractions[0] << "	";
 			outFile << transmittedFractions[1] << "	";
 			outFile << transmittedFractions[2] << "	";

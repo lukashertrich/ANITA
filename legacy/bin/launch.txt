@@ -1,3 +1,11 @@
 gcc anita_earthmodel2.c -o ./bin/anita_earthmodel2 -lm -O3
 
-./anita_earthmodel2 1 Enu 1.0e19 3000 5.0e-36
+usage: anita_earthmodel2 [Nevt][ spectrum='ESS' or 'Enu'][Enu(eV)][maxdepth(m)][cross section factor]
+
+cross section factor should be one
+
+Nevt is the number of interactions to print
+
+
+
+./anita_earthmodel2 1 ESS 1.0e19 3000 1

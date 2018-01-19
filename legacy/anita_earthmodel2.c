@@ -1,6 +1,6 @@
 
 /*
- * gcc anita_earthmodel2.c -o ~/bin/anita_earthmodel2 -lm -O2
+ * gcc anita_earthmodel2.c -o ./bin/anita_earthmodel2 -lm -O3
  *
 anita_earthmodel: monte carlo neutrino interactions coming into
 antarctica, anita-style.
@@ -73,7 +73,11 @@ double Ltot=0.0, K1=0.0, CHORDdepth=0.0, Rr=0.0;
 #define MAXDIST1  2000.0e5   /* cm, distance from entry to allow vertices for downgoing*/
 #define MAXDIST2  2000.0e5   /* cm, distance from exit to allow vertices from emerging */
 
-
+int fixedNadir;
+double nadirDegrees;
+int verbose;
+int throws = 0;
+int transmitted = 0;
 //---------------------------------------------------------------------------------------
 
 /* these are coefficients for a polynomial fit to ESS over 1e17-1e21 eV */
@@ -142,14 +146,18 @@ int main(int argc, char **argv)
   double nu0,numin,numax,integrate_Lint(),maxdepth,upang,updown,nadA,ang_corr,Dist,thet;
    struct timeval seed_time;
 
+
+
 /*___________________________end of declarations__________________________*/
 
 //USAGE:
 
 	if(argc < 3){
 	fprintf(stderr,
-"usage: anita_earthmodel2 [Nevt][ spectrum='ESS' or 'Enu'][Enu(eV)][maxdepth(m)][cross section factor] \n");
+"usage: anita_earthmodel2 [Nevt (number of interactions to accumulate)][ spectrum='ESS' or 'Enu'][Enu(eV)][maxdepth(m)][cross section factor][FixedNadir][NadirDegrees][Verbose] \n");
 	fprintf(stderr, "If single energy 'Enu' then argv[3] is the neutrino energy, else ignored\n");
+	fprintf(stderr, "If FixedNadir is 1, NadirDegrees will be used, else incremented.\n");
+	fprintf(stderr, "If verbose is 1, every interaction will be printed, else just the final Ntrials needed to get Nevt interactions.\n");
 		exit(0);
 		}
 	ESS=0;
@@ -159,6 +167,9 @@ int main(int argc, char **argv)
 	Enu = atof(argv[3]);
 	maxdepth = atof(argv[4]);
 	cross_section_factor = atof(argv[5]);
+	fixedNadir = atoi(argv[6]);
+	nadirDegrees = atof(argv[7]);
+	verbose = atoi(argv[8]);
 	MAXDEPTH = maxdepth*100.0;
 
  	nabs =0;
@@ -177,12 +188,19 @@ int main(int argc, char **argv)
  fprintf(stdout,"#Enu= %e eV\t maxdepth= %e m\n", Enu, maxdepth);
 
 /* --------------start the main loop on neutrino events HERE ----------- */
-
-printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdepth(m)\tcc/nc\tEnu(EeV)\n");
+if (verbose){
+printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdepth(m)\tcc/nc\tEnu(EeV)\tevTrials\n");
+}
+else{
+	printf("Accumulating %8d interactions...\n", Nevt);
+}
   Ntrials = 0.0; evno = 1;
 
-
+int evTrials;
  for(i=0;i<Nevt;i++){
+
+// Reset evTrials
+evTrials = 0;
 
  /* we loop on input angles, interaction length and depth
      until we get a final depth of less than MAXDEPTH */
@@ -194,8 +212,13 @@ printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdept
 	  // get the input nadir angle, from horizon to nadir
 	  // the entry angle of the track takes care of downgoing events
 	  // exit angle for upcoming events
-	  nadA = get_nadir_angle();  // just throw the dice for cos(nadA)
-
+	  
+	  if(fixedNadir){
+		  nadA = nadirDegrees * M_PI / 180.0; // Convert degrees to radians
+	  }
+	  else {
+	  	nadA = get_nadir_angle();  // just throw the dice for cos(nadA)
+	  }
 	  // get the length of the chord:
   	  K1 = 2.*Recm*cos(nadA);
 
@@ -212,8 +235,7 @@ printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdept
 	  // this is correct, but is not used  11/26/2005  --PG
 
 	  depth = integrate_Lint(nadA,Lint); // integrate along track to get gm/cm^2 at interaction
-	  				// this function returns the depth below nearest surface
-
+	  				// this function returns the depth below nearest surface	
 	  // get the complement of upangle
 	   thet = get_thet();  // also uses globals Ltot, K1
 	  // upangle is the emergence angle wrt local surface ==> negative for downgoing
@@ -224,22 +246,31 @@ printf("#Ntrials\tevno\tnadA(d)\tupang(d)\tLint(kmwe)\tLtot(km)\tChord(km)\tdept
 
 	// exclude escaping tracks, those too close to surface, and those too large:
 	// >22 deg upangle is a problem
-	if( depthm<5.0 || upang<-.1 || upang >= PI/2.-thetaC-0.2)depth = MAXDEPTH+1.0;
+	if( depthm<5.0 || upang<-.1 || upang >= PI/2.-thetaC-0.2)depth = MAXDEPTH+1.0;	
 	// last part dumps this track
 
 	Ntrials += 2.0; // downgoing on entrance and upcoming on exit, 2 trials
+	evTrials += 2;
 	}
 	/* if we got out from above, it means we have a valid interaction, within allowed depth range*/
 
 	Dist = (K1-Ltot);
-
-	printf("%8d\t %6d\t %5.2f\t    %6.3f\t    %8.4f\t    %8.4f\t    %8.4f\t    %8.4f\t   %d\t   %8.4f\n",
-		 (int)Ntrials,evno, nadA*180.0/PI,(upang)*180.0/PI,Lint/1.e5,Ltot/1.e5,K1/1.e5,depthm/1.e2,iLint,Enu/1e18);
+if(verbose){
+	printf("%8d\t %6d\t %5.2f\t    %6.3f\t    %8.4f\t    %8.4f\t    %8.4f\t    %8.4f\t   %d\t   %8.4f\t   %8d\n",
+		 (int)Ntrials,evno, nadA*180.0/PI,(upang)*180.0/PI,Lint/1.e5,Ltot/1.e5,K1/1.e5,depthm/1.e2,iLint,Enu/1e18,evTrials);
 	fflush(stdout);
+}
 	evno++;
 
 
     }
+	if(!verbose){
+		printf("Simulation complete! Final results to accumulate %8d interactions:\n", Nevt);
+		printf("[Ntrials]\t   [Nevt]\t   [Nadir]\t   [Energy]\t   [Transmittance]\n");
+		//printf("%8d\t   %8d\t   %5.2f\t   %3.2f\t   %5.8f\n", (int)Ntrials, Nevt, nadA*180.0/PI, Enu, (Ntrials - Nevt)/Ntrials);
+		printf("%8d\t   %8d\t   %5.2f\t   %3.2f\t   %5.8f\n", (int)Ntrials, Nevt, nadA*180.0/PI, Enu, (1.0 * transmitted)/throws);
+		fflush(stdout);
+	}
 	
 }  /* >>>>>>>>>>>>>>>>> end main <<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
@@ -288,7 +319,7 @@ double E,cross_section_factor;
 {
    double sigcc,signc,sigbcc,sigbnc,avgsigcc,avgsignc,Na,L,sigbar,sigtot,expdev(),cc2nc_ratio;
 
-	//sigcc = 5.53e-36*pow(E/1.e9,0.363); // Old Gandhi et al 1996 cross sections
+	sigcc = 5.53e-36*pow(E/1.e9,0.363); // Old Gandhi et al 1996 cross sections
 	//signc = 2.31e-36*pow(E/1.e9,0.363);
 	//sigbcc = 5.52e-36*pow(E/1.e9,0.363);
 	//sigbnc = 2.29e-36*pow(E/1.e9,0.363);
@@ -297,7 +328,7 @@ double E,cross_section_factor;
 	//cc_plus_nc_totalfactor = 1.414;  // combined total cross section compared to cc
 
 	/* neutrino to antineutrino ratio is very close to 1 */
-	sigcc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) );
+	//sigcc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) );
 	//sigtot = 7.82e-36*pow(E/1.e9,0.363);
 	//sigbar = avgsigcc;
 
@@ -310,6 +341,7 @@ double E,cross_section_factor;
 
 
 	return(L*expdev()); // returns total gm cm^2 interaction length
+	
 }
 
 /* produces an exponentially distributed interaction length, neutral current  */
@@ -319,12 +351,12 @@ double E,cross_section_factor;
    double sigcc,signc,sigbcc,sigbnc,avgsigcc,avgsignc,Na,L,sigbar,sigtot, expdev(),cc2nc_ratio;
 
 	//sigcc = 5.53e-36*pow(E/1.e9,0.363);
-	//signc = 2.31e-36*pow(E/1.e9,0.363);
+	signc = 2.31e-36*pow(E/1.e9,0.363);
 	//sigbcc = 5.52e-36*pow(E/1.e9,0.363);
 	//sigbnc = 2.29e-36*pow(E/1.e9,0.363);
 
 	cc2nc_ratio = 2.39;
-	signc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) ) / cc2nc_ratio;
+	//signc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) ) / cc2nc_ratio;
 
 	//sigtot = 7.82e-36*pow(E/1.e9,0.363);
 	//sigbar = avgsignc;
@@ -389,6 +421,7 @@ double integrate_Lint(uA, LL)   // uA is the nadir angle
   gmtot = 0.0;
   L1 = 0.0;
   dL = 200.0;  // these are cm ==> 2m increments
+  throws++;
   while(gmtot<LL){
     DeltaL = K1-L1; // added 11/26/05
     /*  the original line--did it work by symmetry, even though wrong?? */
@@ -396,7 +429,8 @@ double integrate_Lint(uA, LL)   // uA is the nadir angle
     // above version does not follow cosine law directly , rather works by accident
     // correct version here 11/26/05, but the old is algebraically equal.
       Rr = sqrt(Recm*Recm + DeltaL*DeltaL - 2.0*Recm*DeltaL*cos(AA));
-    if(Rr>Recm){
+    if(Rr>Recm){	
+	  transmitted++;
       Ltot = L1;
       d1 = -999999.0;
       break;
