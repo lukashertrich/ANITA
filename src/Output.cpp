@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include "Constants.h"
 
 namespace anita{
     void outputFluxMap(const Vector3<double> position, const double energy, const unsigned long long resolution){
