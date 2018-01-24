@@ -8,7 +8,7 @@
 #include "Diagnostics.h"
 #include "PREM.h"
 #include "DataRaster.h"
-#include "Vector3.h"
+#include "Vector3d.h"
 #include "Raycasting.h"
 #include "Output.h"
 
@@ -33,8 +33,8 @@ namespace anita{
 
     void testInteractionLength(){
         constexpr double energy = 1.0e19;
-        auto position = Vector3<double>{0.0, 1.0, -POLAR_EARTH_RADIUS - 1.0}; // South pole with small y offset to avoid origin on raycast
-        auto direction = Vector3<double>{1.0, 0.0, 0.01};
+        auto position = Vector3d{0.0, 1.0, -POLAR_EARTH_RADIUS - 1.0}; // South pole with small y offset to avoid origin on raycast
+        auto direction = Vector3d{1.0, 0.0, 0.01};
         double interactionLength = getInteractionLength(position, direction);
         auto transmittedFraction = getTransmittedFraction(energy, interactionLength);
         auto crossSections = getCrossSections(energy);
@@ -60,17 +60,17 @@ namespace anita{
 
     void testFluxMapOutput(){
         constexpr double energy = 1.0e19;
-        auto position = Vector3<double>{0.5 * EQUATORIAL_EARTH_RADIUS, 0.0, -0.95 * POLAR_EARTH_RADIUS};
+        auto position = Vector3d{0.5 * EQUATORIAL_EARTH_RADIUS, 0.0, -0.95 * POLAR_EARTH_RADIUS};
         outputFluxMap(position, energy, 100);
     }
 
     void testAngularTrace(){
-        auto position = Vector3<double>{0.0, 0.0, -POLAR_EARTH_RADIUS};
+        auto position = Vector3d{0.0, 0.0, -POLAR_EARTH_RADIUS};
         outputAngularTrace(position, 1.0e19, 1000);
     }
 
     void testEnergySpectrumAngularTrace(){
-        auto position = Vector3<double>{0.0, 0.0, -POLAR_EARTH_RADIUS};
+        auto position = Vector3d{0.0, 0.0, -POLAR_EARTH_RADIUS};
         outputEnergySpectrumAngularTrace(position, 1e11, 1e21, 350);
     }
 

@@ -7,11 +7,11 @@
 #include "QuadraticSolver.h"
 namespace anita{
 
-	Vector3<double> getPositionOfTau(const Vector3<double>& pos, const Vector3<double>& dir, const double tau){
+	Vector3d getPositionOfTau(const Vector3d& pos, const Vector3d& dir, const double tau){
 		return pos + dir.norm() * tau;
 	}
 
-	Vector2<double> getProjectionCoordinates(const Vector3<double>& pos){
+	Vector2<double> getProjectionCoordinates(const Vector3d& pos){
 		const auto alpha = (-POLAR_EARTH_RADIUS - Z_PLANE)/(-POLAR_EARTH_RADIUS + pos.z);
 		return Vector2<double>(pos.x * alpha, pos.y * alpha);
 	}
@@ -30,7 +30,7 @@ namespace anita{
 		return Vector2<double>(xFrac, yFrac);
 	}
 
-	double getDataValue(const Vector3<double>& pos, const DataRaster<float>& dataRaster){	
+	double getDataValue(const Vector3d& pos, const DataRaster<float>& dataRaster){	
 		const auto projCoords = getProjectionCoordinates(pos);
 		const auto dataCoords = getDataCoordinates(projCoords);
 		const auto cellValues = dataRaster.getCellValues(dataCoords);
@@ -42,7 +42,7 @@ namespace anita{
 			+ cellValues[3]*((normalizedUVs.x)*(normalizedUVs.y));
 	}
 
-	double getEllipsoidalRadius(const Vector3<double>& pos){	
+	double getEllipsoidalRadius(const Vector3d& pos){	
 		return sqrt(
 			((EQUATORIAL_EARTH_RADIUS_SQR*(pos.x*pos.x + pos.y*pos.y))
 			+ (POLAR_EARTH_RADIUS_SQR*pos.z*pos.z))
@@ -50,7 +50,7 @@ namespace anita{
 		);
 	}
 
-	double getDistanceToSurface(const Vector3<double>& pos, const DataRaster<float>& dataRaster){
+	double getDistanceToSurface(const Vector3d& pos, const DataRaster<float>& dataRaster){
 		return getEllipsoidalRadius(pos) + getDataValue(pos, dataRaster) - pos.mag();
 	}
 
@@ -93,7 +93,7 @@ namespace anita{
 		+ 3.0 * (b*b-4.0*a*c)*(b*b-4.0*a*c) * log(2.0*sqrt(a)*sqrt(t*(a*t+b)+c)+2.0*a*t+b));
 	}
 
-	std::vector<double> getQuadraticCoefficientsOfNormalizedEllipsoidalRay(const Vector3<double>& pos, const Vector3<double>& direction){
+	std::vector<double> getQuadraticCoefficientsOfNormalizedEllipsoidalRay(const Vector3d& pos, const Vector3d& direction){
 		auto dir = direction.norm();
 		std::vector<double> coefficients;
 		coefficients.push_back((dir.x * dir.x + dir.y * dir.y) / EQUATORIAL_EARTH_RADIUS_SQR + (dir.z * dir.z) / POLAR_EARTH_RADIUS_SQR);
@@ -104,7 +104,7 @@ namespace anita{
 
 	// Provide initial ray position in cartesian meters relative to center of Earth and a unit direction
 	// in order to calculate integral of traversed density across PREM profiles applied to WGS84 ellipsoid
-	double getInteractionLength(const Vector3<double>& pos, const Vector3<double>& direction){
+	double getInteractionLength(const Vector3d& pos, const Vector3d& direction){
 		const auto dir = direction.norm();
 		
 		// Coefficients of quadratic equation to solve against squared normalized PREM profile radii, (ax^2 + bx + c)
@@ -168,14 +168,14 @@ namespace anita{
 		return densityTraversed;
 	}
 
-	double getGradientAlongRayAtPoint(const Vector3<double>& pos, const Vector3<double>& direction, const DataRaster<float>& dataRaster){
+	double getGradientAlongRayAtPoint(const Vector3d& pos, const Vector3d& direction, const DataRaster<float>& dataRaster){
 		auto dir = direction.norm();
 		return (getDistanceToSurface(pos + dir * EPSILON, dataRaster)
 			- getDistanceToSurface(pos - dir * EPSILON, dataRaster))
 			/ (2 * EPSILON);
 	}
 
-	std::vector<double> getCoefficientsOfQuadraticRaystep(const Vector3<double>& pos, const Vector3<double>& direction, const double previousGradientAlongRay,
+	std::vector<double> getCoefficientsOfQuadraticRaystep(const Vector3d& pos, const Vector3d& direction, const double previousGradientAlongRay,
 		const double previousDistanceToSurface, const double tau0, const DataRaster<float>& dataRaster){
 			const auto dir = direction.norm();
 			std::vector<double> coefficients(3);
@@ -189,7 +189,7 @@ namespace anita{
 			return coefficients;
 	}
 		
-	std::vector<double> getTauOfSurfaceIntersections(const Vector3<double>& pos, const Vector3<double> direction, const DataRaster<float>& dataRaster){
+	std::vector<double> getTauOfSurfaceIntersections(const Vector3d& pos, const Vector3d direction, const DataRaster<float>& dataRaster){
 		const auto dir = direction.norm();
 		const auto quadraticCoefficients = getQuadraticCoefficientsOfNormalizedEllipsoidalRay(pos, dir);
 		const auto lower = solveQuadratic(quadraticCoefficients[0], quadraticCoefficients[1], quadraticCoefficients[2] - LOWER_SURFACE_BOUND * LOWER_SURFACE_BOUND);
@@ -208,7 +208,7 @@ namespace anita{
 		double tau;
 		// double distanceToSurface;
 		
-		Vector3<double> position = pos;
+		Vector3d position = pos;
 
 		// Does ray intersect lower bounds, or are intersections behind starting point?
 		// TODO: lower bounds considerations to optimize evaluation, ignoring for now with 'true'

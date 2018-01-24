@@ -1,7 +1,7 @@
 #include "Neutrino.h"
 
 namespace anita{
-    Neutrino::Neutrino(Vector3<double>& destination, Vector3<double>& reverseFlightDir, double& energy): destination(destination), reverseFlightDir(reverseFlightDir), energy(energy){}
+    Neutrino::Neutrino(Vector3d& destination, Vector3d& reverseFlightDir, double& energy): destination(destination), reverseFlightDir(reverseFlightDir), energy(energy){}
     std::vector<double> getCrossSections(const double energy){
         std::vector<double> crossSections;
         crossSections.reserve(6);

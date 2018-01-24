@@ -24,7 +24,7 @@
  */
 
 #include "Vector2.h"
-#include "Vector3.h"
+#include "Vector3d.h"
 #include "DataRaster.h"
 #include "Diagnostics.h"
 #include "QuadraticSolver.h"
@@ -65,8 +65,8 @@ void initialize(){
 int main(int argc, char **argv)
 {	
 	std::cout << "Loading BEDMAP 2 data into memory..." << std::endl;
-	initialize();
-	//std::cout << getDataValue(Vector3<double>(5000., -30000., -POLAR_EARTH_RADIUS), surfaceDataRaster)<< std::endl;
+	//initialize();
+	//std::cout << getDataValue(Vector3d(5000., -30000., -POLAR_EARTH_RADIUS), surfaceDataRaster)<< std::endl;
 	//testInteractionLength();
 	// testFluxMapOutput();
 	testAngularTrace();

@@ -8,4 +8,4 @@ Nevt is the number of interactions to print
 
 
 
-./anita_earthmodel2 1 ESS 1.0e19 3000 1
+./anita_earthmodel2 10 Enu 1.0e19 3000 1 1 89.0 0

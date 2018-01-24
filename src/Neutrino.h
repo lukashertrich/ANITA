@@ -1,15 +1,15 @@
 #pragma once
 #include <cmath>
 #include <vector>
-#include "Vector3.h"
+#include "Vector3d.h"
 
 namespace anita{
     class Neutrino{
         public:
-            const Vector3<double> destination;
-            const Vector3<double> reverseFlightDir;
+            const Vector3d destination;
+            const Vector3d reverseFlightDir;
             const double energy; // eV
-            Neutrino(Vector3<double>& destination, Vector3<double>& reverseFlightDir, double& energy);
+            Neutrino(Vector3d& destination, Vector3d& reverseFlightDir, double& energy);
     };
 
     // Cross section constants from fermilab paper, converted to SI units (square meters & eV)
