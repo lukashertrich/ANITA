@@ -13,6 +13,10 @@ namespace anita{
     };
 
     // Cross section constants from fermilab paper, converted to SI units (square meters & eV)
+
+
+    // ***** DEPRECATED! *****
+    // getCrossSections now contains new fit model
     
     constexpr double NEUTRINO_XSECTION_POW = 0.363; // Used by cross section function
 

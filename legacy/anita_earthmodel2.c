@@ -1,3 +1,5 @@
+// Used to conditionally compile rewritten code for comparision of outputs
+#define REFACTOR
 
 /*
  * gcc anita_earthmodel2.c -o ./bin/anita_earthmodel2 -lm -O3
@@ -268,7 +270,7 @@ if(verbose){
 		printf("Simulation complete! Final results to accumulate %8d interactions:\n", Nevt);
 		printf("[Ntrials]\t   [Nevt]\t   [Nadir]\t   [Energy]\t   [Transmittance]\n");
 		//printf("%8d\t   %8d\t   %5.2f\t   %3.2f\t   %5.8f\n", (int)Ntrials, Nevt, nadA*180.0/PI, Enu, (Ntrials - Nevt)/Ntrials);
-		printf("%8d\t   %8d\t   %5.2f\t   %3.2f\t   %5.8f\n", (int)Ntrials, Nevt, nadA*180.0/PI, Enu, (1.0 * transmitted)/throws);
+		printf("%8d\t   %8d\t   %5.2f\t   %e\t   %e\n", (int)Ntrials, Nevt, nadA*180.0/PI, Enu, (1.0 * transmitted)/throws);
 		fflush(stdout);
 	}
 	
@@ -319,7 +321,7 @@ double E,cross_section_factor;
 {
    double sigcc,signc,sigbcc,sigbnc,avgsigcc,avgsignc,Na,L,sigbar,sigtot,expdev(),cc2nc_ratio;
 
-	sigcc = 5.53e-36*pow(E/1.e9,0.363); // Old Gandhi et al 1996 cross sections
+	// sigcc = 5.53e-36*pow(E/1.e9,0.363); // Old Gandhi et al 1996 cross sections
 	//signc = 2.31e-36*pow(E/1.e9,0.363);
 	//sigbcc = 5.52e-36*pow(E/1.e9,0.363);
 	//sigbnc = 2.29e-36*pow(E/1.e9,0.363);
@@ -328,7 +330,7 @@ double E,cross_section_factor;
 	//cc_plus_nc_totalfactor = 1.414;  // combined total cross section compared to cc
 
 	/* neutrino to antineutrino ratio is very close to 1 */
-	//sigcc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) );
+	sigcc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) );
 	//sigtot = 7.82e-36*pow(E/1.e9,0.363);
 	//sigbar = avgsigcc;
 
@@ -340,7 +342,7 @@ double E,cross_section_factor;
 	L = 1./(Na*sigcc);  /* interaction length now in cm water equiv */
 
 
-	return(L*expdev()); // returns total gm cm^2 interaction length
+	return(L*expdev()); // returns total grams per cm^2 interaction length
 	
 }
 
@@ -351,12 +353,12 @@ double E,cross_section_factor;
    double sigcc,signc,sigbcc,sigbnc,avgsigcc,avgsignc,Na,L,sigbar,sigtot, expdev(),cc2nc_ratio;
 
 	//sigcc = 5.53e-36*pow(E/1.e9,0.363);
-	signc = 2.31e-36*pow(E/1.e9,0.363);
+	// signc = 2.31e-36*pow(E/1.e9,0.363);
 	//sigbcc = 5.52e-36*pow(E/1.e9,0.363);
 	//sigbnc = 2.29e-36*pow(E/1.e9,0.363);
 
 	cc2nc_ratio = 2.39;
-	//signc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) ) / cc2nc_ratio;
+	signc = 1.e-36 * exp ( 82.893 - 98.8*( pow( log(E/1.e9),-0.0964 ) ) ) / cc2nc_ratio;
 
 	//sigtot = 7.82e-36*pow(E/1.e9,0.363);
 	//sigbar = avgsignc;
@@ -406,10 +408,13 @@ double x, get_firn_dens();
 //-----------------------------------------------------------------------------------------
 //
 
+
 double integrate_Lint(uA, LL)   // uA is the nadir angle
      double uA, LL;             // LL in interaction depth in gm cm^2
 {
   double gmtot, L1,dL,d1,AA,get_dens(),DeltaL;
+
+	throws++;
 
 	if(uA>=PI/2.0){
 		AA = PI-uA;
@@ -418,19 +423,19 @@ double integrate_Lint(uA, LL)   // uA is the nadir angle
 		}
 
 //fprintf(stderr,"chord=%e \n", K1/1.e5);
-  gmtot = 0.0;
+  gmtot = 0.0; // Total grammage
   L1 = 0.0;
-  dL = 200.0;  // these are cm ==> 2m increments
-  throws++;
+  dL = 200.0;  // these are cm ==> 2m increments  
   while(gmtot<LL){
+	  
     DeltaL = K1-L1; // added 11/26/05
     /*  the original line--did it work by symmetry, even though wrong?? */
     /* Rr = sqrt(Recm*Recm+L1*L1-2.0*Recm*L1*cos(AA)); original version?? wrong? */
     // above version does not follow cosine law directly , rather works by accident
     // correct version here 11/26/05, but the old is algebraically equal.
       Rr = sqrt(Recm*Recm + DeltaL*DeltaL - 2.0*Recm*DeltaL*cos(AA));
-    if(Rr>Recm){	
-	  transmitted++;
+    if(Rr>Recm){
+		transmitted++;	  
       Ltot = L1;
       d1 = -999999.0;
       break;
